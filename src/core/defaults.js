@@ -38,7 +38,7 @@ export function createInitialState(preset) {
       scopeEpochMs: 0,
       scopeCycleMs: 3200,
       scopePassCount: 0,
-      params: {pan:true,reverb:true,width:true,tremolo:true,delay:true,filter:true,...(preset.fxMod?.params||{})},
+      params: {intensity:true,reverb:true,width:true,tremolo:true,delay:true,filter:true,...(preset.fxMod?.params||{})},
       active: false,
       stage: "IDLE",
       source: null,

@@ -18,6 +18,7 @@ export class AppController {
     this.fxModFrameRequest = null;
     this.fxModPendingTracks = new Map();
     this.fxModPendingEffects = new Map();
+    this.fxModPendingGlobals = new Map();
     this.fxModPendingStatus = null;
     this.automation = new AutomationManager({
       store,
@@ -168,7 +169,7 @@ export class AppController {
         draft.fxMod.memoryY = preset.fxMod?.memoryY ?? 0;
         draft.fxMod.trajectory = Array.isArray(preset.fxMod?.trajectory) ? preset.fxMod.trajectory.map((p) => ({ t: Number(p?.t) || 0, x: Number(p?.x) || 0, y: Number(p?.y) || 0 })) : [];
         draft.fxMod.releaseVelocity = { x: Number(preset.fxMod?.releaseVelocity?.x) || 0, y: Number(preset.fxMod?.releaseVelocity?.y) || 0 };
-        draft.fxMod.params = {pan:true,reverb:true,width:true,tremolo:true,delay:true,filter:true,...(preset.fxMod?.params||draft.fxMod.params||{})};
+        draft.fxMod.params = {intensity:true,reverb:true,width:true,tremolo:true,delay:true,filter:true,...(preset.fxMod?.params||draft.fxMod.params||{})};
         draft.transport.status = priorTransport;
         draft.autoMix.lastMove = "—";
         draft.autoMix.moving = [];
@@ -557,16 +558,19 @@ export class AppController {
 
   #queueFxModFlush() {
     if (this.fxModFrameRequest !== null) return;
-    const schedule = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : (fn) => setTimeout(fn, 16);
-    this.fxModFrameRequest = schedule(() => {
+    // RC204: audio is still applied immediately, but FX Scope state/UI snapshots
+    // are deliberately limited to 5 Hz to keep tablet rendering rock solid.
+    this.fxModFrameRequest = setTimeout(() => {
       this.fxModFrameRequest = null;
       const tracks = new Map(this.fxModPendingTracks);
       const effects = new Map(this.fxModPendingEffects);
+      const globals = new Map(this.fxModPendingGlobals);
       const patch = this.fxModPendingStatus ? { ...this.fxModPendingStatus } : null;
       this.fxModPendingTracks.clear();
       this.fxModPendingEffects.clear();
+      this.fxModPendingGlobals.clear();
       this.fxModPendingStatus = null;
-      if (!tracks.size && !effects.size && !patch) return;
+      if (!tracks.size && !effects.size && !globals.size && !patch) return;
 
       this.store.update(d => {
         for (const [key, value] of tracks) {
@@ -577,6 +581,7 @@ export class AppController {
         for (const [name, value] of effects) {
           if (d.effects[name]) d.effects[name].level = value;
         }
+        if (globals.has('intensity')) d.intensity = globals.get('intensity');
         if (patch) {
           if(patch.active!==undefined)d.fxMod.active=!!patch.active;
           if(patch.stage)d.fxMod.stage=patch.stage;
@@ -596,7 +601,7 @@ export class AppController {
       },{reason:'fxmod-frame'});
 
       if (patch && (patch.memoryX !== undefined || patch.memoryY !== undefined || patch.trajectory !== undefined || patch.releaseVelocity !== undefined || patch.timeMode || patch.probMode)) this.#persistFxScopePreset();
-    });
+    }, 200);
   }
 
   #applyFxModValue(id, value) {
@@ -605,6 +610,13 @@ export class AppController {
       const i=Number(track[1]),param=track[2],safe=Math.max(-1,Math.min(1,Number(value)));
       this.fxModPendingTracks.set(`${i}:${param}`,safe);
       if(this.audioEngine.context)this.audioEngine.setTrackParam(i,param,safe);
+      this.#queueFxModFlush();
+      return;
+    }
+    if(id==='global:intensity'){
+      const safe=Math.max(-1,Math.min(1,Number(value)));
+      this.fxModPendingGlobals.set('intensity',safe);
+      if(this.audioEngine.context)this.audioEngine.setTiming(this.store.getState().frs,safe);
       this.#queueFxModFlush();
       return;
     }

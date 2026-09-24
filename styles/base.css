@@ -5855,3 +5855,22 @@ body.welcome-live-edit .welcome-path-stack .welcome-path-button{
 #crt-screen-root .cc3-screen .cc3-page-nav-bottom{
   top:90%!important;
 }
+
+
+/* RC204 PERFORMANCE — aggressive tablet stability pass. */
+.build-version-label{
+  position:absolute;left:5.99%;top:75.15%;width:49.61%;height:24px;
+  z-index:12;display:flex;align-items:center;justify-content:center;
+  color:#000!important;font:900 18px/1 Arial,sans-serif!important;letter-spacing:1px;
+  text-shadow:none!important;pointer-events:none;user-select:none;
+}
+/* Scope channel dots removed in RC204: the ship + live page controls provide feedback. */
+#crt-screen-root .cc3-screen .cc2-track-dot{display:none!important;}
+/* Keep the only moving scope elements cheap to composite. */
+#crt-screen-root .cc3-screen .cc2-radar-sweep,
+#crt-screen-root .cc3-screen .cc2-fxmod-nav{
+  will-change:transform;
+  filter:none!important;
+}
+#crt-screen-root .cc3-screen .cc2-radar-sweep{box-shadow:none!important;}
+#crt-screen-root .cc3-screen .cc2-fxmod-nav{box-shadow:none!important;}

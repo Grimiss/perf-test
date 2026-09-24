@@ -1,0 +1,12 @@
+D8M4 RC204 PERFORMANCE
+
+- Visible RC204 build label added directly below the main CRT.
+- FX Scope coloured channel dots removed.
+- FX Scope PAN parameter replaced by INTENSITY.
+- Scope-selected Auto Mix parameters are now reserved by the Scope even between Special Events; deselecting immediately returns them to Auto Mix.
+- FX Scope state/UI snapshots limited to 5 Hz while audio parameter application remains immediate.
+- General automation visual refresh target reduced to 5 Hz.
+- Manual live-control render target reduced to ~15 Hz.
+- BYD volume slider state/audio commits throttled to ~15 Hz during drag, with immediate thumb feedback and final-value commit on release.
+- Scope sweep display reduced to ~10 Hz and moving-element glow/compositing reduced.
+- Hidden FX Scope animation remains stopped outside FX STATION.

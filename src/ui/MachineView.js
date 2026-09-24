@@ -30,7 +30,7 @@ export class MachineView {
     const reason=String(meta?.reason||'');
     const automationVisual=/^(automix-|special-event-|fxmod-frame)/.test(reason);
     const liveControl=/^(track-(volume|pan|filter)|effect-|character-|intensity)/.test(reason);
-    const minGap=automationVisual?100:(liveControl?33:0);
+    const minGap=automationVisual?200:(liveControl?67:0);
     const elapsed=performance.now()-this.lastVisualRenderAt;
     const run=()=>{
       this.renderFrame=null;

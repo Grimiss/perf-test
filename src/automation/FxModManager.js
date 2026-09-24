@@ -13,19 +13,25 @@ export class FxModManager {
   }
 
   paramOn(name){return this.store.getState().fxMod?.params?.[name]!==false;}
-  ids(){return ['effect:reverb','effect:width','effect:tremolo','effect:delay',...Array.from({length:4},(_,i)=>`track:${i}:pan`),...Array.from({length:4},(_,i)=>`track:${i}:filter`)];}
-  onParamsChanged(){
-    if(this.active&&this.baseline){
-      this.ids().forEach(id=>this.resume(id));
-      const p=this.store.getState().fxMod?.params||{}; const ids=[];
-      if(p.reverb!==false)ids.push('effect:reverb'); if(p.width!==false)ids.push('effect:width');
-      if(p.tremolo!==false)ids.push('effect:tremolo'); if(p.delay!==false)ids.push('effect:delay');
-      for(let i=0;i<4;i++){ if(p.pan!==false)ids.push(`track:${i}:pan`); if(p.filter!==false)ids.push(`track:${i}:filter`); }
-      ids.forEach(id=>this.suspend(id));
-    }
+  automationIds(){return ['effect:reverb','effect:width','effect:tremolo','effect:delay',...Array.from({length:4},(_,i)=>`track:${i}:filter`)];}
+  selectedAutomationIds(){
+    const p=this.store.getState().fxMod?.params||{}; const ids=[];
+    if(p.reverb!==false)ids.push('effect:reverb'); if(p.width!==false)ids.push('effect:width');
+    if(p.tremolo!==false)ids.push('effect:tremolo'); if(p.delay!==false)ids.push('effect:delay');
+    for(let i=0;i<4;i++) if(p.filter!==false)ids.push(`track:${i}:filter`);
+    return ids;
   }
-  setEnabled(enabled){ if(!enabled){this.cancel(true);this.stopAuto();} else this.scheduleAuto(true); }
-  onTransport(status){ if(status==='playing'&&this.store.getState().fxMod.enabled)this.scheduleAuto(true); else this.stopAuto(); }
+  syncOwnership(){
+    const enabled=Boolean(this.store.getState().fxMod?.enabled);
+    const selected=new Set(enabled?this.selectedAutomationIds():[]);
+    this.automationIds().forEach(id=>selected.has(id)?this.suspend(id):this.resume(id));
+  }
+  onParamsChanged(){ this.syncOwnership(); }
+  setEnabled(enabled){
+    if(!enabled){this.cancel(true);this.stopAuto();this.syncOwnership();}
+    else {this.syncOwnership();this.scheduleAuto(true);}
+  }
+  onTransport(status){ if(status==='playing'&&this.store.getState().fxMod.enabled){this.syncOwnership();this.scheduleAuto(true);} else this.stopAuto(); }
   onFRSChanged(){ if(this.store.getState().fxMod.enabled)this.scheduleAuto(true); }
   setGameControlled(enabled){
     this.gameControlled=Boolean(enabled);
@@ -144,7 +150,7 @@ export class FxModManager {
     if(this.autoTimer)clearTimeout(this.autoTimer); this.autoTimer=null;
     if(this.scopeTimer)clearTimeout(this.scopeTimer); this.scopeTimer=null;
   }
-  capture(){ const s=this.store.getState(); return {reverb:s.effects.reverb.level,width:s.effects.width.level,tremolo:s.effects.tremolo.level,delay:s.effects.delay.level,pans:s.tracks.map(t=>t.pan),filters:s.tracks.map(t=>t.filter)}; }
+  capture(){ const s=this.store.getState(); return {reverb:s.effects.reverb.level,width:s.effects.width.level,tremolo:s.effects.tremolo.level,delay:s.effects.delay.level,intensity:s.intensity,filters:s.tracks.map(t=>t.filter)}; }
 
   beginManual(){
     if(!this.store.getState().fxMod.enabled)return false;
@@ -361,7 +367,7 @@ export class FxModManager {
 
   #begin(source){
     this.generation++; if(this.timer)clearTimeout(this.timer);
-    if(!this.active){ this.baseline=this.capture(); this.ids().forEach(id=>this.suspend(id)); }
+    if(!this.active){ this.baseline=this.capture(); this.syncOwnership(); }
     this.timer=null; this.active=true; this.onStatus({active:true,source,stage:'SPIKE'});
   }
   #applyXY(x,y,stage='ACTIVE'){
@@ -370,7 +376,7 @@ export class FxModManager {
     if(this.paramOn('width'))this.apply('effect:width',clamp01(b.width+x*.42));
     if(this.paramOn('tremolo'))this.apply('effect:tremolo',clamp01(b.tremolo+y*.42));
     if(this.paramOn('delay'))this.apply('effect:delay',clamp01(b.delay+y*.42));
-    if(this.paramOn('pan'))b.pans.forEach((v,i)=>this.apply(`track:${i}:pan`,clampBi(v+x*.62)));
+    if(this.paramOn('intensity'))this.apply('global:intensity',clampBi(b.intensity+x*.50));
     if(this.paramOn('filter'))b.filters.forEach((v,i)=>this.apply(`track:${i}:filter`,clampBi(v+y*.62)));
     this.onStatus({active:true,x,y,stage});
   }
@@ -412,12 +418,12 @@ export class FxModManager {
   }
   cancel(restore=true){
     this.generation++; if(this.timer)clearTimeout(this.timer); this.timer=null;
-    if(restore&&this.baseline){ const b=this.baseline; this.apply('effect:reverb',b.reverb); this.apply('effect:width',b.width); this.apply('effect:tremolo',b.tremolo); this.apply('effect:delay',b.delay); b.pans.forEach((v,i)=>this.apply(`track:${i}:pan`,v)); b.filters.forEach((v,i)=>this.apply(`track:${i}:filter`,v)); }
+    if(restore&&this.baseline){ const b=this.baseline; this.apply('effect:reverb',b.reverb); this.apply('effect:width',b.width); this.apply('effect:tremolo',b.tremolo); this.apply('effect:delay',b.delay); this.apply('global:intensity',b.intensity); b.filters.forEach((v,i)=>this.apply(`track:${i}:filter`,v)); }
     this.#finish();
   }
   #finish(){
     if(this.timer)clearTimeout(this.timer); this.timer=null; this.active=false; this.manual=false;
-    this.ids().forEach(id=>this.resume(id));
+    this.syncOwnership();
     this.scopePassCount=0;
     this.randomProbTarget=null;
     this.onStatus({active:false,x:0,y:0,stage:'IDLE',scopePassCount:0});

@@ -75,7 +75,7 @@ export class CRTSystem {
         return;
       }
       const nowMs=performance.now();
-      if(nowMs-this.scopeLastFrameMs<32){ this.scopeSweepFrame=window.requestAnimationFrame(tick); return; }
+      if(nowMs-this.scopeLastFrameMs<100){ this.scopeSweepFrame=window.requestAnimationFrame(tick); return; }
       this.scopeLastFrameMs=nowMs;
       const state = this.store.getState();
       const sweep = this.cached('.cc2-radar-sweep');
@@ -150,19 +150,32 @@ export class CRTSystem {
       this.interacting=true;
       slider.setPointerCapture?.(e.pointerId);
       const index=Number(slider.dataset.index);
-      const apply=(ev)=>{
+      let lastCommit=0, pendingValue=null, commitTimer=null;
+      const commit=(value,force=false)=>{
+        pendingValue=value;
+        const now=performance.now();
+        const wait=Math.max(0,67-(now-lastCommit));
+        if(force || wait<=0){
+          if(commitTimer){clearTimeout(commitTimer);commitTimer=null;}
+          lastCommit=now; const next=pendingValue; pendingValue=null;
+          this.controller.setTrackVolume(index,next/100);
+        }else if(!commitTimer){
+          commitTimer=setTimeout(()=>{commitTimer=null;if(pendingValue!==null){lastCommit=performance.now();const next=pendingValue;pendingValue=null;this.controller.setTrackVolume(index,next/100);}},wait);
+        }
+      };
+      const apply=(ev,force=false)=>{
         const rect=slider.getBoundingClientRect();
         if (!rect.width) return;
         const raw=(ev.clientX-rect.left)/rect.width;
         const clamped=Math.max(0,Math.min(1,raw));
         const value=Math.round(clamped*100);
         slider.value=String(value);
-        this.controller.setTrackVolume(index,value/100);
+        commit(value,force);
       };
       const move=(ev)=>{ if (ev.pointerId===e.pointerId) apply(ev); };
       const end=(ev)=>{
         if (ev.pointerId!==e.pointerId) return;
-        apply(ev);
+        apply(ev,true);
         try { slider.releasePointerCapture?.(e.pointerId); } catch {}
         window.removeEventListener('pointermove',move,true);
         window.removeEventListener('pointerup',end,true);
@@ -476,11 +489,10 @@ export class CRTSystem {
 
       const sweep=this.root.querySelector('.cc2-radar-sweep');
       if(sweep) sweep.dataset.frs=state.frs;
-      const enabledParams=state.fxMod.params||{pan:true,reverb:true,width:true,tremolo:true,delay:true,filter:true};
+      const enabledParams=state.fxMod.params||{intensity:true,reverb:true,width:true,tremolo:true,delay:true,filter:true};
       this.root.querySelectorAll('[data-action="fxmod-param"]').forEach(b=>b.classList.toggle('active',enabledParams[b.dataset.param]!==false));
       this.root.querySelectorAll('[data-action="frs"]').forEach(el=>el.classList.toggle('active',el.dataset.mode===state.frs));
       setRange('input[data-kind="intensity"]', Math.round(state.intensity*50));
-      state.tracks.forEach((track,i)=>{const dot=this.root.querySelector(`[data-track-dot="${i}"]`);if(!dot)return;const x=50+(track.pan||0)*38,y=50-(track.filter||0)*38;dot.style.left=`${x}%`;dot.style.top=`${y}%`;dot.style.opacity=String(.45+Math.max(0,Math.min(1,track.volume||0))*.55);dot.style.transform=`translate(-50%,-50%) scale(${.75+Math.max(0,Math.min(1,track.volume||0))*.55})`;});
       return;
     }
 
@@ -925,7 +937,7 @@ Choose your destination:  "><div class="spectrum-typed-line"><span class="typed-
 
   renderControlCentre(state) {
     const channelColors=['red','green','blue','yellow'];
-    const enabledParams=state.fxMod.params||{pan:true,reverb:true,width:true,tremolo:true,delay:true,filter:true};
+    const enabledParams=state.fxMod.params||{intensity:true,reverb:true,width:true,tremolo:true,delay:true,filter:true};
     const channels=state.tracks.map((t,i)=>`<section data-dev-layer="live" data-dev-key="ch${i+1}" class="cc3-channel cc3-${channelColors[i]}">
       <div class="cc3-channel-title">CH${i+1}</div>
       <div class="cc3-param cc3-filter-only"><div class="cc3-param-head"><span>FILTER</span></div><div class="cc3-slider-wrap"><i class="cc3-mid" aria-hidden="true"></i><input class="cc3-slider" data-kind="track-filter" data-reset="track" data-param="filter" data-index="${i}" type="range" min="-100" max="100" value="${Math.round(t.filter*100)}"></div></div>
@@ -935,7 +947,7 @@ Choose your destination:  "><div class="spectrum-typed-line"><span class="typed-
     const fxTimeValue=(state.fxMod.timeMode||'01').replace(/^0/,'');
     const fxProbValue=String(state.fxMod.probMode||'x1').toUpperCase();
     const fxOptions=`<section class="cc3-panel cc3-fx-options-panel"><div class="cc3-fx-options-grid"><div class="cc3-fx-options-col"><div class="cc3-fx-options-title">TIME</div><div class="cc3-fx-options-value" data-fx-option-value="time">${fxTimeValue}</div><button data-action="fxmod-time" data-menu-item class="cc4-side-button cc3-fx-options-set">SET</button></div><div class="cc3-fx-options-col"><div class="cc3-fx-options-title">PROB</div><div class="cc3-fx-options-value" data-fx-option-value="prob">${fxProbValue}</div><button data-action="fxmod-prob" data-menu-item class="cc4-side-button cc3-fx-options-set">SET</button></div><button data-action="fxmod-reset" data-menu-item class="cc4-side-button cc4-reset-button cc3-fx-options-reset">RESET</button></div></section>`;
-    const scope=`<section data-dev-layer="live" data-dev-key="scope" class="cc2-radar-panel ccv2-scope"><div class="cc2-fxmod-head"><span>FX SCOPE</span></div><div class="cc2-radar-zone"><div class="cc2-radar-wrap"><div class="cc2-radar" data-fxmod-pad role="slider" aria-label="FX Mod XY pad"><i class="cc2-radar-ring r1"></i><i class="cc2-radar-ring r2"></i><i class="cc2-radar-v"></i><i class="cc2-radar-h"></i><i class="cc2-radar-sweep"></i><i class="cc2-track-dot dot-r" data-track-dot="0"></i><i class="cc2-track-dot dot-g" data-track-dot="1"></i><i class="cc2-track-dot dot-b" data-track-dot="2"></i><i class="cc2-track-dot dot-y" data-track-dot="3"></i><i class="cc2-fxmod-nav" aria-label="FX Scope ship"></i></div></div></div><div class="cc2-fxmod-params"><div><b>X</b><button data-action="fxmod-param" data-param="pan" data-menu-item class="cc2-param ${enabledParams.pan!==false?'active':''}">PAN</button><button data-action="fxmod-param" data-param="reverb" data-menu-item class="cc2-param ${enabledParams.reverb!==false?'active':''}">REVERB</button><button data-action="fxmod-param" data-param="width" data-menu-item class="cc2-param ${enabledParams.width!==false?'active':''}">WIDTH</button></div><div><b>Y</b><button data-action="fxmod-param" data-param="tremolo" data-menu-item class="cc2-param ${enabledParams.tremolo!==false?'active':''}">TREM</button><button data-action="fxmod-param" data-param="delay" data-menu-item class="cc2-param ${enabledParams.delay!==false?'active':''}">DELAY</button><button data-action="fxmod-param" data-param="filter" data-menu-item class="cc2-param ${enabledParams.filter!==false?'active':''}">FILTER</button></div></div></section>`;
+    const scope=`<section data-dev-layer="live" data-dev-key="scope" class="cc2-radar-panel ccv2-scope"><div class="cc2-fxmod-head"><span>FX SCOPE</span></div><div class="cc2-radar-zone"><div class="cc2-radar-wrap"><div class="cc2-radar" data-fxmod-pad role="slider" aria-label="FX Mod XY pad"><i class="cc2-radar-ring r1"></i><i class="cc2-radar-ring r2"></i><i class="cc2-radar-v"></i><i class="cc2-radar-h"></i><i class="cc2-radar-sweep"></i><i class="cc2-fxmod-nav" aria-label="FX Scope ship"></i></div></div></div><div class="cc2-fxmod-params"><div><b>X</b><button data-action="fxmod-param" data-param="intensity" data-menu-item class="cc2-param ${enabledParams.intensity!==false?'active':''}">INTENSITY</button><button data-action="fxmod-param" data-param="reverb" data-menu-item class="cc2-param ${enabledParams.reverb!==false?'active':''}">REVERB</button><button data-action="fxmod-param" data-param="width" data-menu-item class="cc2-param ${enabledParams.width!==false?'active':''}">WIDTH</button></div><div><b>Y</b><button data-action="fxmod-param" data-param="tremolo" data-menu-item class="cc2-param ${enabledParams.tremolo!==false?'active':''}">TREM</button><button data-action="fxmod-param" data-param="delay" data-menu-item class="cc2-param ${enabledParams.delay!==false?'active':''}">DELAY</button><button data-action="fxmod-param" data-param="filter" data-menu-item class="cc2-param ${enabledParams.filter!==false?'active':''}">FILTER</button></div></div></section>`;
 
     this.root.innerHTML=`<div class="crt-screen cc2-screen ccv2-screen cc3-screen" data-dev-page="cc">
       <header data-dev-layer="design" data-dev-key="header" class="d8m4-zone-header" aria-label="Empty header placeholder"></header>
