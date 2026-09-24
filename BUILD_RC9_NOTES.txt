@@ -1,0 +1,7 @@
+RC9 changes:
+- Imported user split-dev JSON as the starting geometry.
+- Typed guidance now grows left-to-right from a fixed left edge.
+- Typed guidance defaults to yellow and its colour editor now affects the visible typed copy.
+- Flashing L cursor is inverted: white box with black L.
+- BYD / CC / UG buttons remain grouped by nav-stack but can each be moved and resized in LIVE DEV.
+- Fresh V9 layout storage key prevents broken RC8 browser overrides carrying forward.

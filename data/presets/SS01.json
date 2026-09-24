@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 2,
+  "id": "SS01",
+  "name": "Soundscape 1",
+  "tracks": [
+    {
+      "name": "Prophet 5",
+      "assetId": "D8M4_SS01_CH1",
+      "volume": 0.75,
+      "pan": -0.72,
+      "filter": 0.0,
+      "xfade": 1
+    },
+    {
+      "name": "JP 8000",
+      "assetId": "D8M4_SS01_CH2",
+      "volume": 0.22,
+      "pan": 0.72,
+      "filter": 0.0,
+      "xfade": 1
+    },
+    {
+      "name": "Arp",
+      "assetId": "D8M4_SS01_CH3",
+      "volume": 0.63,
+      "pan": 0.0,
+      "filter": 0.0,
+      "xfade": 1
+    },
+    {
+      "name": "Bass Drone",
+      "assetId": "D8M4_SS01_CH4",
+      "volume": 0.26,
+      "pan": 0.0,
+      "filter": 0.0,
+      "xfade": 1
+    }
+  ],
+  "effects": {
+    "tremolo": {
+      "enabled": true,
+      "level": 0.19
+    },
+    "delay": {
+      "enabled": true,
+      "level": 0.51
+    },
+    "reverb": {
+      "enabled": true,
+      "level": 0.77
+    },
+    "width": {
+      "enabled": true,
+      "level": 0.72
+    }
+  },
+  "character": {
+    "age": 0.1,
+    "hiss": 0.1,
+    "wowFlutter": 0.1
+  },
+  "tapeType": "normal",
+  "frs": "focus",
+  "intensity": 0,
+  "fxMod": {
+    "enabled": true,
+    "hold": "normal",
+    "params": {
+      "pan": true,
+      "reverb": true,
+      "width": true,
+      "tremolo": true,
+      "delay": true,
+      "filter": true
+    },
+    "timeMode": "01",
+    "probMode": "x1",
+    "memoryX": 0,
+    "memoryY": 0
+  }
+}

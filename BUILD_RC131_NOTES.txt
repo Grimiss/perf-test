@@ -1,0 +1,9 @@
+D8M4 RC131
+
+Changes in this build:
+- FX STATION: increased Effects button text to a clearly larger size.
+- FX STATION: increased MOOD / FRS button text to a clearly larger size.
+
+Scope:
+- CSS typography only.
+- No JavaScript or functional behaviour changed.

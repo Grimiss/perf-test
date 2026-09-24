@@ -1,0 +1,10 @@
+D8M4 RC132
+
+Changes in this build:
+- FX STATION: made the TIME and PROB button columns narrower.
+- FX STATION: re-centred the FX Scope horizontally within the FX Scope area.
+- FX STATION: removed the unwanted left-side vertical line from the top-right scope corner detail.
+
+Scope:
+- CSS/layout only.
+- No JavaScript, FX Scope logic, audio, Auto Mix, FRS, transport, game, or TV behaviour changed.

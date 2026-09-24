@@ -1,0 +1,8 @@
+D8M4 CP06 Welcome 3-Layer Dev RC10
+
+- Applies latest user JSON export (2026-09-19T14:41:31.433Z).
+- Typed guidance defaults to "Now build your drone..." in yellow.
+- Spectrum L cursor implemented as a one-character-cell cursor immediately after the text.
+- Cursor alternates normal L / inverse-video white cell with black L; no opacity blink.
+- BYD, CC, UG, GAME and TV are direct LIVE-layer elements with root-relative X/Y/W/H, so the LIVE DEV editor can move/resize them independently on the post-Play screen.
+- Fresh local layout storage key V10.

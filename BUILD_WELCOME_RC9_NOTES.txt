@@ -1,0 +1,8 @@
+D8M4 CP06 CRT Experience RC9 - Welcome refinement
+- Welcome foreground recession slowed to 1.65 s.
+- Startup UI sound lengthened to ~2.2 s with transport clunk, filtered tape/head noise and motor/capstan run-up.
+- Guidance split into two sentences with a deliberate pause between them.
+- Text area widened so neither sentence runs off the CRT.
+- Added pause after typing before BUILD YOUR DRONE fades in.
+- BUILD YOUR DRONE reveal separated from pulse/hover animation to prevent disappearing/un-clickable hover state.
+- Typing click level increased substantially.

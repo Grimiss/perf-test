@@ -1,0 +1,7 @@
+D8M4 CP06 Control Centre DEV RC3
+
+Changes from RC2:
+- Cropped/shifted the CC background upward to remove most of the excessive empty black field at the top of the CRT.
+- Channel panels now use a fully opaque black fill.
+- Global Effects, radar and Character panels now use a fully opaque black fill.
+- Existing live controls, state wiring, navigation and RC2 compact proportions are retained.

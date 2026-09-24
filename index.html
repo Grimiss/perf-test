@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>D84M Drone Machine</title>
+  <link rel="stylesheet" href="styles/base.css?v=rc198">
+</head>
+<body>
+  <div class="stage-viewport" id="stage-viewport">
+    <main class="stage" id="stage" aria-label="D84M physical machine checkpoint">
+      <div class="machine" id="machine">
+        <section class="main-crt" aria-label="Main CRT">
+          <div class="crt-screen-root" id="crt-screen-root"></div>
+          <div class="ss-flash" id="ss-flash">01</div>
+        </section>
+
+        <section class="small-crt" aria-label="Small CRT status">
+          <div class="small-title" id="small-ss">01: SOUNDSCAPE 01</div>
+          <div class="small-levels" id="small-levels"></div>
+          <div class="small-footer"><div class="small-status-toggles"><button id="small-automix" type="button">AUTO MIX: ON</button><button id="small-ramp" type="button">RAMP: ON</button></div><span id="small-tape">TYPE I</span><span id="small-transport">STOP</span></div>
+        </section>
+
+        <img class="crt-glass" src="assets/visuals/d8m4-crt-glass.png" alt="" aria-hidden="true">
+        <div class="bottom-fill" aria-hidden="true"></div>
+        <img class="shell" src="assets/visuals/d8m4-shell.png" alt="" aria-hidden="true">
+
+        <div class="legend-layer" id="legend-layer" aria-label="Screen printed legends">
+          <div class="legend-item legend-d84m" data-legend-dev data-dev-key="unit-name" data-dev-label="UNIT NAME" data-edit-text>D84M</div>
+          <div class="legend-item legend-portable" data-legend-dev data-dev-key="portable-line" data-dev-label="PORTABLE TV AUDIO AND GAMES" data-edit-text>PORTABLE TV AUDIO &amp; GAMES</div>
+
+          <div class="legend-item legend-print legend-soundscapes" data-legend-dev data-dev-key="soundscapes-title" data-dev-label="SOUNDSCAPES TITLE" data-edit-text>SOUNDSCAPES</div>
+          <div class="legend-item legend-print legend-brightness" data-legend-dev data-dev-key="brightness-title" data-dev-label="BRIGHTNESS TITLE" data-edit-text>BRIGHTNESS</div>
+          <div class="legend-item legend-print legend-tone" data-legend-dev data-dev-key="tone-title" data-dev-label="TONE TITLE" data-edit-text>TONE</div>
+          <div class="legend-item legend-print legend-gamevol" data-legend-dev data-dev-key="gamevol-title" data-dev-label="GAME VOL TITLE" data-edit-text>GAME VOL</div>
+          <div class="legend-item legend-print legend-mainvol" data-legend-dev data-dev-key="mainvol-title" data-dev-label="MAIN VOL TITLE" data-edit-text>MAIN VOL</div>
+          <div class="legend-item legend-print legend-mute" data-legend-dev data-dev-key="mute-title" data-dev-label="MUTE TITLE" data-edit-text>MUTE</div>
+          <div class="legend-item legend-print legend-effects" data-legend-dev data-dev-key="effects-title" data-dev-label="EFFECTS TITLE" data-edit-text>EFFECTS</div>
+          <div class="legend-item legend-print legend-mood" data-legend-dev data-dev-key="mood-title" data-dev-label="MOOD TITLE" data-edit-text>MOOD</div>
+          <div class="legend-item legend-print legend-intensity" data-legend-dev data-dev-key="intensity-title" data-dev-label="INTENSITY TITLE" data-edit-text>INTENSITY</div>
+          <div class="legend-item legend-print legend-mode" data-legend-dev data-dev-key="mode-title" data-dev-label="MODE TITLE" data-edit-text>MODE</div>
+          <div class="legend-item legend-print legend-timer" data-legend-dev data-dev-key="timer-title" data-dev-label="TIMER TITLE" data-edit-text>TIMER</div>
+
+          <div class="legend-item legend-fine legend-slower" data-legend-dev data-dev-key="slower-label" data-dev-label="SLOWER LABEL" data-edit-text>SLOWER</div>
+          <div class="legend-item legend-fine legend-faster" data-legend-dev data-dev-key="faster-label" data-dev-label="FASTER LABEL" data-edit-text>FASTER</div>
+
+          <div class="legend-item legend-rca legend-videoin" data-legend-dev data-dev-key="video-in-label" data-dev-label="VIDEO IN LABEL" data-edit-text>VIDEO IN</div>
+          <div class="legend-item legend-rca legend-audio-l" data-legend-dev data-dev-key="audio-l-label" data-dev-label="AUDIO L LABEL" data-edit-text>AUDIO L</div>
+          <div class="legend-item legend-rca legend-audio-r" data-legend-dev data-dev-key="audio-r-label" data-dev-label="AUDIO R LABEL" data-edit-text>AUDIO R</div>
+          <div class="legend-item legend-headphones" data-legend-dev data-dev-key="headphones-icon" data-dev-label="HEADPHONES ICON" aria-hidden="true"></div>
+
+          <img src="assets/visuals/ga-logo.png" alt="Grimiss Ambient" class="legend-item legend-brand-logo" data-legend-dev data-dev-key="brand-logo" data-dev-label="GRIMISS AMBIENT LOGO">
+          <div class="legend-item legend-brand-text legend-brand-drone" data-legend-dev data-dev-key="brand-drone" data-dev-label="DRONE MACHINE BRAND TEXT" data-edit-text>DRONE MACHINE</div>
+          <div class="legend-item legend-brand-text legend-brand-model" data-legend-dev data-dev-key="brand-model" data-dev-label="MODEL D84M BRAND TEXT" data-edit-text>MODEL D84M</div>
+        </div>
+<div class="live-layer">
+          <div class="soundscape-controls" aria-label="Soundscapes">
+            <button class="soundscape-button ss1" data-soundscape="SS01"><span>1</span></button>
+            <button class="soundscape-button ss2" data-soundscape="SS02"><span>2</span></button>
+            <button class="soundscape-button ss3" disabled><span>3</span></button>
+            <button class="soundscape-button ss4" disabled><span>4</span></button>
+            <button class="soundscape-button ss5" disabled><span>5</span></button>
+            <button class="soundscape-button ss6" disabled><span>6</span></button>
+          </div>
+
+          <button class="transport-button play-button" id="play-button"><span class="transport-icon play-icon"></span><span>PLAY</span></button>
+          <button class="transport-button pause-button" id="pause-button"><span class="transport-icon pause-icon"></span><span>PAUSE</span></button>
+          <button class="transport-button stop-button" id="stop-button"><span class="transport-icon stop-icon"></span><span>STOP</span></button>
+
+          <button class="rocker brightness-rocker" data-rocker="brightness"><span>+</span><b aria-hidden="true"></b><span>−</span></button>
+          <button class="rocker tone-rocker" data-rocker="tone"><span>+</span><b aria-hidden="true"></b><span>−</span></button>
+          <button class="rocker gamevol-rocker" data-rocker="gameVolume"><span>+</span><b aria-hidden="true"></b><span>−</span></button>
+          <button class="rocker mainvol-rocker" data-rocker="mainVolume"><span>+</span><b aria-hidden="true"></b><span>−</span></button>
+          <button class="master-mute-button jack-mute-button" id="master-mute-button" aria-pressed="false" aria-label="Master mute"><b aria-hidden="true"></b></button>
+
+          <button class="effect-button trem-button" data-effect-button="tremolo">TREM</button>
+          <button class="effect-button delay-button" data-effect-button="delay">DELAY</button>
+          <button class="effect-button reverb-button" data-effect-button="reverb">REVERB</button>
+          <button class="effect-button width-button" data-effect-button="width">WIDTH</button>
+
+          <button class="mode-button focus-button" data-frs="focus">FOCUS</button>
+          <button class="mode-button relax-button" data-frs="relax">RELAX</button>
+          <button class="mode-button sleep-button" data-frs="sleep">SLEEP</button>
+          <input class="intensity-slider" id="intensity" type="range" min="-50" max="50" value="0" step="1" aria-label="Intensity">
+
+          <button class="future-button game-button" id="game-button" aria-label="Game mode"><span class="future-icon alien-icon" aria-hidden="true"></span><span>GAME</span></button>
+          <button class="future-button tv-button" id="tv-button" aria-label="TV mode"><span class="future-icon retro-tv-icon" aria-hidden="true"></span><span>TV</span></button>
+
+          <button class="timer-button timer-set" id="timer-set-button">SET TIMER</button>
+          <div class="timer-display" id="timer-display" aria-live="polite">OFF</div>
+          <button class="timer-button timer-start" id="timer-start-button" aria-pressed="false">PAUSE</button>
+          <button class="timer-button timer-reset" id="timer-reset-button">RESET</button>
+          <div class="timer-option-menu" id="timer-option-menu" hidden>
+            <div class="timer-option-header">Please select length of timer required:</div>
+            <button type="button" data-timer-option="900">C15</button>
+            <button type="button" data-timer-option="7200">2 HOURS</button>
+            <button type="button" data-timer-option="1800">C30</button>
+            <button type="button" data-timer-option="14400">4 HOURS</button>
+            <button type="button" data-timer-option="3600">C60</button>
+            <button type="button" data-timer-option="28800">8 HOURS</button>
+            <button type="button" data-timer-option="5400">C90</button>
+            <button type="button" data-timer-option="0">OFF</button>
+          </div>
+
+          <div class="utility-mask" id="utility-panel" aria-label="Utility button backing panel"></div>
+          <button class="utility-button byd-button" id="byd-button">BUILD YOUR<br>DRONE</button>
+          <button class="utility-button cc-button" id="cc-button">FX<br>STATION</button>
+          <button class="utility-button guides-button" id="guides-button">USER<br>GUIDES</button>
+
+          <button class="bottom-key z-key" data-future="Z / UP / LEFT">Z<small>UP / LEFT</small></button>
+          <button class="bottom-key x-key" data-future="X / DOWN / RIGHT">X<small>DOWN / RIGHT</small></button>
+          <button class="bottom-key space-key" id="space-key">SPACE<small>SELECT / FIRE</small></button>
+        </div>
+
+        <div class="osd" id="osd" aria-live="polite"></div>
+      </div>
+    </main>
+  </div>
+
+  <aside class="dev-dock" aria-label="Checkpoint 5 development controls">
+    <strong>CP05 DEV</strong>
+    <button id="automix-toggle">AUTO MIX ON</button>
+    <button id="automix-force">FORCE EVENT</button>
+    <button id="special-event-force">SPECIAL EVENT</button>
+    <span id="dev-status">Ready</span>
+  </aside>
+
+  <script type="module" src="src/main.js?v=rc198"></script>
+</body>
+</html>

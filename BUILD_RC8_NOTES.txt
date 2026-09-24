@@ -1,0 +1,13 @@
+D8M4 CP06 CRT EXPERIENCE RC8
+- Welcome PLAY now pulses slowly.
+- PLAY triggers original synthesized machine-start UI sound.
+- Foreground layers recede/fade backward while Welcome background remains fixed.
+- New Spectrum-typed onboarding text with per-character synthesized click and established flashing/inverse L cursor.
+- BUILD YOUR DRONE fades in after typing and then pulses.
+- Welcome -> BYD uses reusable CRT stepped dissolve transition.
+- Added BYD DESIGN DEV + BYD LIVE DEV windows.
+- Added CC DESIGN DEV + CC LIVE DEV windows.
+- BYD/CC dev windows are draggable, closable, default open, page-aware, and switch automatically with CRT page.
+- Bottom dev dock has DESIGN DEV / LIVE DEV / BOTH controls.
+- Dev geometry autosaves locally.
+- Welcome dev windows now hide automatically off the Welcome page.

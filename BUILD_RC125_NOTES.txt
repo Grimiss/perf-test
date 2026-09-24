@@ -1,0 +1,18 @@
+D8M4 RC125 — FX STATION visual refinement
+
+Changes requested and implemented:
+- FX STATION Effects controls stacked vertically, one effect per row.
+- Reduced onscreen button glow on BYD and FX STATION.
+- Added thin neutral outlines around FX STATION Effects and CH1–CH4 panels.
+- Renamed MODE panel title to MOOD on BYD and FX STATION.
+- Moved BUILD YOUR DRONE and CLOSE navigation buttons to bottom-right of FX STATION, below the channel row.
+- Reinforced channel colours: CH2 green, CH3 true blue, CH4 yellow (BYD + FX STATION colour variables).
+- Increased button label font sizes on BYD and FX STATION.
+- FX STATION effect slider numeric values are white.
+- Doubled FX Scope RGBY dot size from the previous 9px presentation to 18px.
+- Replaced the FX Scope triangle navigator graphic with a small spaceship silhouette.
+
+No audio behaviour, Auto Mix logic, FX Scope / Special Event logic, Game Mode logic, FRS behaviour, track Frequency/Dropout/Loop logic, X-FADE behaviour, or transport logic was changed.
+
+Validation:
+- node --check src/ui/CRTSystem.js : PASS

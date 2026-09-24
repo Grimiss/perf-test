@@ -1,0 +1,96 @@
+D8M4 CHECKPOINT 6 — CRT SYSTEM RC1
+
+STARTUP
+- Fresh load shows SELECT SOUNDSCAPE on the large CRT.
+- SS01 is selected by default; SS01/SS02 are selectable; SS03-SS06 show COMING SOON.
+- PLAY starts audio and opens BUILD YOUR DRONE automatically.
+
+PHYSICAL CRT FUNCTION BUTTONS
+- BUILD YOUR DRONE inactive text grey; active text red.
+- CONTROL CENTRE inactive text grey; active text green.
+- USER GUIDES inactive text grey; active text blue.
+- Only one of the three is active at a time.
+- Pressing the active button again closes it back to the underlying screen.
+
+BUILD YOUR DRONE
+- SS, transport, four track volumes, effects, F/R/S, Intensity, Main Vol, Tone, Game Vol and Brightness controls all affect the same central state/audio.
+- TV opens the TV missing-asset screen.
+- GAME shows the CP07 placeholder.
+
+CONTROL CENTRE
+- CH1-4 Volume/Pan/Filter update audio and linked small-CRT levels.
+- XFade 1/2/3 remains always-on.
+- Mute/Solo work.
+- Effect level/on-off, Character and Tape Type work.
+- MONO/STEREO can be heard changing the complete ambient output; returning to Stereo restores pan.
+- AUTO MIX ON/OFF works.
+- Double-click Track/Effect/Character sliders restores the current SS preset value.
+
+SMALL CRT
+- SS name, four interactive volume bars, Auto Mix, Tape Type and Transport status update.
+
+USER GUIDES
+- Four guide choices open simple J-card placeholders and BACK works.
+
+IDLE / TV
+- Closing a secondary screen returns to idle static unless TV is underneath.
+- TV shows MISSING ASSET with D8M4_SS01_TV.mp4 or D8M4_SS02_TV.mp4.
+- TV button exits back to idle.
+
+REGRESSION
+- CP01-CP05 audio, automation, physical controls, OSD and special-event DEV button still behave as before.
+
+CRT LIVE-UPDATE / CLICK REGRESSION
+- Start playback and leave Auto Mix running.
+- While controls are visibly automating, click BYD Effect/FRS/Transport buttons.
+- Buttons must respond immediately without first pressing a physical Pause/Stop control.
+- Open Control Centre while Auto Mix is running and click Mute/Solo/XFade/Tape/Auto Mix controls.
+- Drag faders while automation continues; the dragged control must remain under the pointer and must not be destroyed/recreated mid-drag.
+
+RC6 LOCAL SHELL / MASTER MUTE
+- Confirm bottom rack feels more integrated but all lower controls remain usable.
+- Confirm Brightness, Tone, Game Volume, Main Volume and Mute have even visual spacing.
+- Confirm Mute is same width as rockers and shorter in height.
+- Confirm Mute icon is grey when inactive and glows red when active.
+- Change Main Volume while muted; unmute must use the new stored Main Volume.
+- Confirm SS01/SS02 physical and BYD selectors respond immediately and show LOADING feedback.
+
+RC7 BRUSHED METAL ROCKER PANEL / MUTE
+- Confirm the rocker area uses a grouped muted brushed-aluminium insert, not a black strip.
+- Confirm the grouped panel has five openings: Brightness, Tone, Game Vol, Main Vol and Mute.
+- Confirm spacing looks even and the Mute key is shorter than the rockers.
+- Confirm Mute icon is grey when inactive and glows red when active.
+- Confirm Mute silences output without altering stored Main Volume.
+- Confirm SS01 and SS02 selection works from both the startup/BYD screens and the physical soundscape buttons.
+
+RC8 METAL PANEL VISIBILITY TUNE
+- Confirm the brushed aluminium insert is now clearly visible as a grouped panel behind the rockers.
+- Confirm the panel remains subtle and does not look like bright chrome.
+- Confirm control positions still look centered inside the panel cutouts.
+
+RC9 METAL PANEL LAYER FIX
+- Confirm the brushed-aluminium rocker panel is now visibly rendered above the shell artwork.
+- Confirm all live rockers and Mute remain above the panel and fully clickable.
+
+RC10 BAKED METAL PANEL
+- The brushed aluminium rocker panel is now part of d8m4-shell.png itself, not a CSS overlay.
+- Confirm the grey metal insert is clearly visible behind Brightness / Tone / Game Vol / Main Vol / Mute.
+- Confirm all five live controls still align with their cutouts.
+- Confirm Mute remains grey when off and glows red when on.
+RC12 CHARCOAL PANEL
+- Confirm the rocker insert is now a noticeably darker charcoal grey, not black.
+- Confirm all four rockers and the mute key are centered cleanly in their cutouts.
+- Confirm the lower-right shell area near USER GUIDES is intact again.
+
+RC17 TWO-LAYER CRT NAVIGATION
+- Fresh load starts on WELCOME with SS01 selected and transport STOPPED.
+- Press PLAY: WELCOME remains visible; typed text "NOW BUILD YOUR DRONE...." appears with flashing black-box L cursor; then BUILD YOUR DRONE button appears.
+- Physical BYD / CONTROL CENTRE / USER GUIDES / GAME / TV buttons work before and after first PLAY.
+- BYD / CC / USER GUIDES form an overlay layer. Each has three cyan footer buttons: the other two overlay pages + CLOSE.
+- CLOSE removes only the overlay and reveals the prior base screen.
+- WELCOME / GAME / TV form the base layer, only one active at a time, with no CLOSE button.
+- GAME and TV pages link to the other base pages; WELCOME links to GAME and TV.
+- Switching a base page while an overlay is open changes the underlying base without closing the overlay.
+- Returning to WELCOME never resets transport or Soundscape. The active SS is highlighted in the Welcome menu.
+- Fresh reload is the only action that restores default SS01 + STOP.
+- Any future progressively typed CRT text must use the same flashing L cursor rule.

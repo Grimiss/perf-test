@@ -1,0 +1,5 @@
+D84M CP06 RC19 — INTERACTION FIX
+- Fixed FX MOD NORMAL / 5x / 10x / infinity buttons (incorrect event variable).
+- Fixed BYD and Control Centre sliders/buttons being intercepted by the open development editors.
+- Development windows remain open by default and editable, but live interactive controls now receive pointer input normally.
+- Use the dev window Target selector to select/move a live layer containing controls; the controls themselves remain operational.

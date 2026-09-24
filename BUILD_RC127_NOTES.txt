@@ -1,0 +1,9 @@
+D8M4 RC127
+
+Changes in this build:
+- FX STATION: corrected the Effects section so each effect name/button sits above its slider.
+- FX STATION: changed the Effects section and CH1–CH4 sections to use a visible white outline matching the MOOD panel style more closely.
+
+Scope:
+- Control Centre / FX STATION only.
+- No audio, Auto Mix, FX Scope event logic, FRS, transport, gameplay, TV logic, track modes or other working systems changed.

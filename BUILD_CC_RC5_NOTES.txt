@@ -1,0 +1,6 @@
+D8M4 CP06 Control Centre RC5
+- CC background artwork raised further to reduce the remaining black top band.
+- Four channel control row moved downward.
+- Global Effects / Radar / Character row moved downward in step with the channel row.
+- Decorative cyan striping/vent detail below the control boxes removed.
+- Functional control bindings/navigation preserved from RC4.

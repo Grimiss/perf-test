@@ -1,0 +1,41 @@
+D8M4 CHECKPOINT 2 — CORE MIXING — RC1 TEST CHECKLIST
+=====================================================
+
+Run through VS Code / Live Server as before.
+
+REGRESSION — CP01
+[ ] PLAY / PAUSE / PLAY / STOP still works.
+[ ] Space bar still toggles PLAY/PAUSE.
+[ ] CH4 bass transport click remains acceptably controlled.
+[ ] Volume / Mute / Solo / XFade 1/2/3 still behave correctly.
+
+PAN
+[ ] Move each PAN fully left and right and confirm audible movement.
+[ ] Centre returns the track to centre.
+[ ] Pan does not change the Volume control value.
+
+FILTER
+[ ] Centre (0) sounds neutral.
+[ ] Move left toward LP: highs progressively disappear.
+[ ] Move right toward HP: lows progressively disappear.
+[ ] Resonant character becomes stronger toward either extreme.
+[ ] Returning to centre sounds neutral again.
+
+SOUNDSCAPES
+[ ] SS01 loads and plays normally.
+[ ] While PLAYING, select SS02: SS01 continues while SS02 loads, then a short safe crossfade occurs and transport remains PLAYING.
+[ ] While PLAYING, select SS01 again and confirm the same safe transition.
+[ ] STOP, select another SS: it loads but remains stopped; PLAY starts it from zero.
+[ ] PAUSE, select another SS: it remains paused; PLAY starts the newly selected SS from zero.
+[ ] Mute/Solo clear on Soundscape change.
+[ ] Track controls update to the new Soundscape preset.
+
+NOTE
+SS02 had no complete tuned preset in the reference build, so its four 50% track volumes are DEVELOPMENT DEFAULTS only. They are not being treated as final factory values.
+
+XFADE DEFAULT / LOOP SAFETY
+- Every track should start with XFade 1 selected.
+- There is no XFade OFF state.
+- Pressing the already-selected XFade button must leave it selected.
+- Choices 1/2/3 remain 250/750/1500 ms.
+- Let each track loop and confirm the loop-boundary clicks are removed at the default XFade 1 setting.

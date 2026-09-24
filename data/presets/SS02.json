@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 2,
+  "id": "SS02",
+  "name": "Soundscape 2",
+  "developmentPreset": true,
+  "tracks": [
+    {
+      "name": "microKORG",
+      "assetId": "D8M4_SS02_CH1",
+      "volume": 0.5,
+      "pan": 0.0,
+      "filter": 0.0,
+      "xfade": 1
+    },
+    {
+      "name": "Pro 5 - Drone",
+      "assetId": "D8M4_SS02_CH2",
+      "volume": 0.5,
+      "pan": 0.0,
+      "filter": 0.0,
+      "xfade": 1
+    },
+    {
+      "name": "Tape Bass",
+      "assetId": "D8M4_SS02_CH3",
+      "volume": 0.5,
+      "pan": 0.0,
+      "filter": 0.0,
+      "xfade": 1
+    },
+    {
+      "name": "Casio CZ",
+      "assetId": "D8M4_SS02_CH4",
+      "volume": 0.5,
+      "pan": 0.0,
+      "filter": 0.0,
+      "xfade": 1
+    }
+  ],
+  "effects": {
+    "tremolo": {
+      "enabled": false,
+      "level": 0
+    },
+    "delay": {
+      "enabled": false,
+      "level": 0
+    },
+    "reverb": {
+      "enabled": false,
+      "level": 0
+    },
+    "width": {
+      "enabled": false,
+      "level": 0
+    }
+  },
+  "character": {
+    "age": 0,
+    "hiss": 0,
+    "wowFlutter": 0
+  },
+  "tapeType": "normal",
+  "frs": "focus",
+  "intensity": 0,
+  "fxMod": {
+    "enabled": true,
+    "hold": "normal",
+    "params": {
+      "pan": true,
+      "reverb": true,
+      "width": true,
+      "tremolo": true,
+      "delay": true,
+      "filter": true
+    },
+    "timeMode": "01",
+    "probMode": "x1",
+    "memoryX": 0,
+    "memoryY": 0
+  }
+}

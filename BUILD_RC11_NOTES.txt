@@ -1,0 +1,5 @@
+D8M4 CP06 Welcome 3-Layer Dev RC11
+- Applied latest PLAY geometry export.
+- Added reusable .d8m4-menu-button hover/focus style to onscreen menu buttons, including PLAY and BUILD YOUR DRONE.
+- Spectrum typing cursor now uses a white L in its normal phase and a white inverse cell with black L in its flash phase.
+- Preserves RC10 phased Welcome flow and split DESIGN/LIVE development editors.

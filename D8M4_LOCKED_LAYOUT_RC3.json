@@ -1,0 +1,153 @@
+{
+  "design": {
+    "width": 1536,
+    "height": 1024
+  },
+  "exportedAt": "2026-09-19T06:53:38.413Z",
+  "elements": {
+    "rocker:brightness": {
+      "x": 949,
+      "y": 364,
+      "w": 72,
+      "h": 91
+    },
+    "rocker:gameVolume": {
+      "x": 949,
+      "y": 623,
+      "w": 72,
+      "h": 91
+    },
+    "rocker:tone": {
+      "x": 949,
+      "y": 493,
+      "w": 72,
+      "h": 91
+    },
+    "rocker:mainVolume": {
+      "x": 949,
+      "y": 746,
+      "w": 72,
+      "h": 102
+    },
+    "#master-mute-button": {
+      "x": 1174,
+      "y": 914,
+      "w": 36,
+      "h": 36
+    },
+    "#play-button": {
+      "x": 1065,
+      "y": 37,
+      "w": 129,
+      "h": 74
+    },
+    "#pause-button": {
+      "x": 1206,
+      "y": 37,
+      "w": 143,
+      "h": 76
+    },
+    "#stop-button": {
+      "x": 1362,
+      "y": 37,
+      "w": 140,
+      "h": 75
+    },
+    "future:Z / UP / LEFT": {
+      "x": 30,
+      "y": 894,
+      "w": 128,
+      "h": 82
+    },
+    "future:X / DOWN / RIGHT": {
+      "x": 172,
+      "y": 893,
+      "w": 138,
+      "h": 83
+    },
+    "effect:tremolo": {
+      "x": 1070,
+      "y": 372,
+      "w": 104,
+      "h": 62
+    },
+    "effect:delay": {
+      "x": 1184,
+      "y": 371,
+      "w": 98,
+      "h": 62
+    },
+    "effect:reverb": {
+      "x": 1292,
+      "y": 371,
+      "w": 99,
+      "h": 61
+    },
+    "effect:width": {
+      "x": 1401,
+      "y": 371,
+      "w": 96,
+      "h": 61
+    },
+    "frs:focus": {
+      "x": 1070,
+      "y": 468,
+      "w": 136,
+      "h": 56
+    },
+    "frs:relax": {
+      "x": 1216,
+      "y": 467,
+      "w": 137,
+      "h": 58
+    },
+    "frs:sleep": {
+      "x": 1361,
+      "y": 467,
+      "w": 137,
+      "h": 57
+    },
+    "#intensity": {
+      "x": 1164,
+      "y": 537,
+      "w": 250,
+      "h": 20
+    },
+    "#game-button": {
+      "x": 1069,
+      "y": 607,
+      "w": 213,
+      "h": 80
+    },
+    "#tv-button": {
+      "x": 1290,
+      "y": 607,
+      "w": 209,
+      "h": 79
+    },
+    "class:timer-button.timer-set": {
+      "x": 1068,
+      "y": 729,
+      "w": 102,
+      "h": 52
+    },
+    "class:timer-button.timer-start": {
+      "x": 1338,
+      "y": 729,
+      "w": 77,
+      "h": 54
+    },
+    "class:timer-button.timer-reset": {
+      "x": 1422,
+      "y": 729,
+      "w": 79,
+      "h": 53
+    },
+    "#space-key": {
+      "x": 1258,
+      "y": 891,
+      "w": 246,
+      "h": 83
+    }
+  }
+}

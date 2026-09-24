@@ -1,0 +1,5 @@
+D8M4 CP06 CONTROL CENTRE RC7
+- replaced the CC background with a hybrid render that has less open sky
+- moved the visual horizon effectively above the control area
+- used a welcome-style lower foreground to reduce distracting lines behind the controls
+- retained the RC6 control layout and black filled control panels

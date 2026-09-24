@@ -1,0 +1,12 @@
+D8M4 RC201 PERFORMANCE TEST
+
+Runtime changes:
+- DEV editors/docks are not instantiated (removes 180/250/350 ms polling loops and selection overlays).
+- MachineView batches store-driven DOM work to one requestAnimationFrame.
+- FX Scope requestAnimationFrame only runs while FX STATION is visible.
+- Whole-machine CSS filter removed; brightness is represented by a cheap overlay.
+- Per-frame game canvas filter removed.
+- Welcome pulse avoids filter/box-shadow animation.
+- Optional profiler available with ?perf=1 (FPS, average FPS, long tasks, heap when supported, current screen).
+
+No audio/Auto Mix/Game Mode/SpE/timer control logic intentionally changed.

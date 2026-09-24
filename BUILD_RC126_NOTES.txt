@@ -1,0 +1,9 @@
+D8M4 RC126
+
+Changes in this build:
+- FX STATION: adjusted the FX Scope ship marker to look closer to the supplied small rocket reference.
+- FX STATION: moved the effect name/toggle buttons above each effect slider while keeping the effects stacked vertically.
+
+Scope:
+- Visual/CSS only.
+- No JavaScript, audio, Auto Mix, FX Scope event logic, transport, FRS, track-mode, X-FADE, Game Mode or TV behaviour changes.

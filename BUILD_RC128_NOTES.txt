@@ -1,0 +1,12 @@
+D8M4 RC128
+
+Changes in this build:
+- FX STATION: moved FX Scope TIME options to the left side of the scope with dedicated selectable buttons: 1, 2, 5, 10, INF.
+- FX STATION: moved FX Scope PROB options to the right side of the scope with dedicated selectable buttons: x1, x2, x5, x10, RND.
+- Added PROB RND mode, which randomly selects a probability target between 1 and 10 with weighting toward the lower end of the scale.
+- FX STATION: user ship in the scope increased to roughly twice the previous size.
+- FX STATION: reduced button glow across the page, especially on active buttons.
+
+Scope:
+- Only the requested FX Scope Time/Prob UI and probability-selection behaviour were changed.
+- Existing FX Scope interaction, Special Event triggering structure, BYD behaviour, audio systems, Auto Mix, transport, FRS, game logic and TV logic remain otherwise unchanged.

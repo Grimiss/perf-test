@@ -1,0 +1,9 @@
+D8M4 RC129
+
+Changes in this build:
+- FX STATION: restored the FX Scope to a true circular shape after the RC128 side-control layout stretched it.
+- FX STATION: reduced the height of the BUILD YOUR DRONE and CLOSE navigation buttons.
+
+Scope:
+- CSS/layout only.
+- No audio, FX Scope event logic, probability behaviour, Auto Mix, FRS, track controls, transport, Game Mode or TV logic changed.

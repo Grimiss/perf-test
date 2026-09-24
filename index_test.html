@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>D84M Drone Machine</title>
+  <link rel="stylesheet" href="styles/base.css?v=rc116">
+</head>
+<body>
+  <div class="stage-viewport" id="stage-viewport">
+    <main class="stage" id="stage" aria-label="D84M physical machine checkpoint">
+      <div class="machine" id="machine">
+        <section class="main-crt" aria-label="Main CRT">
+          <div class="crt-screen-root" id="crt-screen-root"></div>
+          <div class="ss-flash" id="ss-flash">01</div>
+        </section>
+
+        <section class="small-crt" aria-label="Small CRT status">
+          <div class="small-title" id="small-ss">01: SOUNDSCAPE 01</div>
+          <div class="small-levels" id="small-levels"></div>
+          <div class="small-footer"><span id="small-automix">AUTO MIX: ON</span><span id="small-tape">TYPE I</span><span id="small-transport">STOP</span></div>
+        </section>
+
+        <img class="crt-glass" src="assets/visuals/d8m4-crt-glass.png" alt="" aria-hidden="true">
+        <div class="bottom-fill" aria-hidden="true"></div>
+        <img class="shell" src="assets/visuals/d8m4-shell.png" alt="" aria-hidden="true">
+<div class="live-layer">
+          <div class="soundscape-controls" aria-label="Soundscapes">
+            <button class="soundscape-button ss1" data-soundscape="SS01"><span>1</span></button>
+            <button class="soundscape-button ss2" data-soundscape="SS02"><span>2</span></button>
+            <button class="soundscape-button ss3" disabled><span>3</span></button>
+            <button class="soundscape-button ss4" disabled><span>4</span></button>
+            <button class="soundscape-button ss5" disabled><span>5</span></button>
+            <button class="soundscape-button ss6" disabled><span>6</span></button>
+          </div>
+
+          <button class="transport-button play-button" id="play-button"><span class="transport-icon play-icon"></span><span>PLAY</span></button>
+          <button class="transport-button pause-button" id="pause-button"><span class="transport-icon pause-icon"></span><span>PAUSE</span></button>
+          <button class="transport-button stop-button" id="stop-button"><span class="transport-icon stop-icon"></span><span>STOP</span></button>
+
+          <button class="rocker brightness-rocker" data-rocker="brightness"><span>+</span><b aria-hidden="true"></b><span>−</span></button>
+          <button class="rocker tone-rocker" data-rocker="tone"><span>+</span><b aria-hidden="true"></b><span>−</span></button>
+          <button class="rocker gamevol-rocker" data-rocker="gameVolume"><span>+</span><b aria-hidden="true"></b><span>−</span></button>
+          <button class="rocker mainvol-rocker" data-rocker="mainVolume"><span>+</span><b aria-hidden="true"></b><span>−</span></button>
+          <button class="master-mute-button jack-mute-button" id="master-mute-button" aria-pressed="false" aria-label="Master mute"><b aria-hidden="true"></b></button>
+
+          <button class="effect-button trem-button" data-effect-button="tremolo">TREM</button>
+          <button class="effect-button delay-button" data-effect-button="delay">DELAY</button>
+          <button class="effect-button reverb-button" data-effect-button="reverb">REVERB</button>
+          <button class="effect-button width-button" data-effect-button="width">WIDTH</button>
+
+          <button class="mode-button focus-button" data-frs="focus">FOCUS</button>
+          <button class="mode-button relax-button" data-frs="relax">RELAX</button>
+          <button class="mode-button sleep-button" data-frs="sleep">SLEEP</button>
+          <input class="intensity-slider" id="intensity" type="range" min="-50" max="50" value="0" step="1" aria-label="Intensity">
+
+          <button class="future-button game-button" id="game-button">▦<span>GAME</span></button>
+          <button class="future-button tv-button" id="tv-button">▣<span>TV</span></button>
+
+          <button class="timer-button timer-set" disabled>SET TIMER</button>
+          <div class="timer-display">00:00</div>
+          <button class="timer-button timer-start" disabled>START<br>PAUSE</button>
+          <button class="timer-button timer-reset" disabled>RESET</button>
+
+          <div class="utility-mask" id="utility-panel" aria-label="Utility button backing panel"></div>
+          <button class="utility-button byd-button" id="byd-button">BUILD YOUR<br>DRONE</button>
+          <button class="utility-button cc-button" id="cc-button">CONTROL<br>CENTRE</button>
+          <button class="utility-button guides-button" id="guides-button">USER<br>GUIDES</button>
+
+          <button class="bottom-key z-key" data-future="Z / UP / LEFT">Z<small>UP / LEFT</small></button>
+          <button class="bottom-key x-key" data-future="X / DOWN / RIGHT">X<small>DOWN / RIGHT</small></button>
+          <button class="bottom-key space-key" id="space-key">SPACE<small>SELECT / FIRE</small></button>
+
+          <div class="brand-block">
+            <img src="assets/visuals/ga-logo.png" alt="Grimiss Ambient" class="brand-logo">
+            <div class="model-line">DRONE MACHINE &nbsp; MODEL D84M</div>
+          </div>
+        </div>
+
+        <div class="osd" id="osd" aria-live="polite"></div>
+      </div>
+    </main>
+  </div>
+
+  <aside class="dev-dock" aria-label="Checkpoint 5 development controls">
+    <strong>CP05 DEV</strong>
+    <button id="automix-toggle">AUTO MIX ON</button>
+    <button id="automix-force">FORCE EVENT</button>
+    <button id="special-event-force">SPECIAL EVENT</button>
+    <span id="dev-status">Ready</span>
+  </aside>
+
+  <script type="module" src="src/main.js?v=rc116"></script>
+<script>setTimeout(()=>document.querySelector("#cc-button")?.click(),700);</script></body>
+</html>

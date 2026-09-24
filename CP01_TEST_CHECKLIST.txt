@@ -1,0 +1,44 @@
+D8M4 — CHECKPOINT 1 CORE — TEST CHECKLIST
+==========================================
+
+This is the clean CP01 test build. It deliberately has no D8M4 shell, CRTs,
+Pan, Filter, Effects, Character, Auto Mix, games, TV or timer yet.
+
+START
+1. Double-click START_D8M4_CP01.bat.
+2. A browser should open at http://localhost:8000/.
+3. Press PLAY. The four SS01 WAV files should load, then all four tracks play.
+
+CORE TESTS
+[ ] PLAY from STOP starts from the beginning.
+[ ] PAUSE stops audio; PLAY resumes from the same point.
+[ ] STOP stops audio; the next PLAY starts from the beginning.
+[ ] Each VOLUME slider changes only its own channel.
+[ ] MUTE silences its channel without changing the Volume value.
+[ ] SOLO: one Solo leaves only that channel audible; multiple Solo buttons allow those channels together.
+[ ] Turning Solo off restores the previous mix values.
+[ ] XFADE buttons are mutually exclusive per channel: 1=250 ms, 2=750 ms, 3=1500 ms.
+[ ] Pressing the currently selected XFADE button again turns XFade OFF.
+[ ] XFade can be changed while playing without breaking playback.
+[ ] Repeated Play/Pause/Stop use does not create duplicate audio.
+
+XFADE LISTENING TIP
+Solo one channel and listen through several loop boundaries. SS01 loop lengths are
+approximately CH1 14s, CH2 10s, CH3 12s and CH4 9s. Compare OFF, 1, 2 and 3.
+
+IF SOMETHING FAILS
+Please tell ChatGPT exactly which checkbox failed and what you heard/saw. A screenshot
+of the development screen is useful. Do not patch this build manually.
+
+DEPLOYMENT NOTE
+For Netlify, the runtime site is the /public folder. The .bat file is only a Windows
+local-server convenience launcher.
+
+RC2 ADDITIONAL CHECKS
+- CH4 Bass Drone should start, pause and stop without the previous audible click/pop.
+- Space bar should toggle PLAY/PAUSE when focus is not on a slider/button/form control.
+- Transport smoothing is a short safety fade (~18 ms), separate from loop XFade.
+
+- RC3 check: Space should work even after a Volume slider or button has focus.
+
+RC4 anti-pop check: CH4 Bass Drone should start, pause and stop without a click. Transport safety fade = 40 ms and begins only after source start.

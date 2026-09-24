@@ -1,0 +1,83 @@
+{
+  "design": {
+    "width": 762,
+    "height": 656
+  },
+  "scope": "D8M4 Welcome CRT 3-layer layout",
+  "exportedAt": "2026-09-19T10:32:53.399Z",
+  "elements": {
+    "header-block": {
+      "layer": "design",
+      "x": 33,
+      "y": 43,
+      "w": 411,
+      "h": 117
+    },
+    "instruction": {
+      "layer": "design",
+      "x": 61,
+      "y": 210,
+      "w": 396,
+      "h": 28,
+      "text": "Choose your soundscape and then press\nplay",
+      "fontSize": 13,
+      "letterSpacing": -1.8,
+      "color": "#ffe21d",
+      "textAlign": "left"
+    },
+    "copyright": {
+      "layer": "design",
+      "x": 252,
+      "y": 611,
+      "w": 236,
+      "h": 24,
+      "text": "© 1984 Grimiss Ambient",
+      "fontSize": 12,
+      "letterSpacing": 0.5,
+      "color": "#24e7ff",
+      "textAlign": "center"
+    },
+    "soundscape-menu": {
+      "layer": "live",
+      "x": 64,
+      "y": 250,
+      "w": 354,
+      "h": 177
+    },
+    "play-button": {
+      "layer": "live",
+      "x": 79,
+      "y": 451,
+      "w": 107,
+      "h": 36
+    },
+    "nav-stack": {
+      "layer": "live",
+      "x": 66,
+      "y": 264,
+      "w": 231,
+      "h": 112
+    },
+    "typed-line": {
+      "layer": "live",
+      "x": 94,
+      "y": 208,
+      "w": 320,
+      "h": 34
+    },
+    "game-button": {
+      "layer": "live",
+      "x": 71,
+      "y": 474,
+      "w": 120,
+      "h": 33
+    },
+    "tv-button": {
+      "layer": "live",
+      "x": 199,
+      "y": 473,
+      "w": 120,
+      "h": 33
+    }
+  }
+}

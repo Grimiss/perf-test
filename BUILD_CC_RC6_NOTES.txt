@@ -1,0 +1,5 @@
+D8M4 CP06 CONTROL CENTRE RC6
+- background artwork cropped upward more aggressively to reduce the black band at the top
+- channel control row moved further downward
+- lower control row moved down to sit just above the footer buttons
+- vent striping remains removed

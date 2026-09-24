@@ -1,0 +1,102 @@
+{
+  "design": {
+    "width": 762,
+    "height": 656
+  },
+  "scope": "D8M4 Welcome CRT split design/live dev",
+  "exportedAt": "2026-09-19T14:41:31.433Z",
+  "elements": {
+    "header-block": {
+      "layer": "design",
+      "x": 53,
+      "y": 74,
+      "w": 411,
+      "h": 117
+    },
+    "instruction": {
+      "layer": "design",
+      "x": 52,
+      "y": 195,
+      "w": 587,
+      "h": 19,
+      "text": "Choose your soundscape and press play",
+      "fontSize": 13,
+      "letterSpacing": -1.8,
+      "color": "#ffe21d",
+      "textAlign": "left"
+    },
+    "soundscape-menu": {
+      "layer": "live",
+      "x": 54,
+      "y": 223,
+      "w": 354,
+      "h": 177
+    },
+    "play-button": {
+      "layer": "live",
+      "x": 67,
+      "y": 413,
+      "w": 144,
+      "h": 36
+    },
+    "copyright": {
+      "layer": "design",
+      "x": 225,
+      "y": 616,
+      "w": 306,
+      "h": 26,
+      "text": " \u00a9 1984 Grimiss Ambient",
+      "fontSize": 12,
+      "letterSpacing": 0.5,
+      "color": "#24e7ff",
+      "textAlign": "center"
+    },
+    "typed-line": {
+      "layer": "live",
+      "x": 60,
+      "y": 208,
+      "w": 320,
+      "h": 34,
+      "text": "Now build your drone...",
+      "fontSize": 16,
+      "letterSpacing": 0,
+      "color": "#ffe21d",
+      "textAlign": "left"
+    },
+    "ug-button": {
+      "layer": "live",
+      "x": 226,
+      "y": 384,
+      "w": 254,
+      "h": 35
+    },
+    "cc-button": {
+      "layer": "live",
+      "x": 226,
+      "y": 344,
+      "w": 254,
+      "h": 35
+    },
+    "byd-button": {
+      "layer": "live",
+      "x": 226,
+      "y": 254,
+      "w": 254,
+      "h": 35
+    },
+    "game-button": {
+      "layer": "live",
+      "x": 226,
+      "y": 474,
+      "w": 120,
+      "h": 35
+    },
+    "tv-button": {
+      "layer": "live",
+      "x": 359,
+      "y": 473,
+      "w": 120,
+      "h": 35
+    }
+  }
+}

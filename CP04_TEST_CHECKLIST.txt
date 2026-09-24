@@ -1,0 +1,57 @@
+D8M4 CHECKPOINT 4 — AUTOMATION — RC1 TEST CHECKLIST
+
+START
+1. Open the extracted folder in VS Code and run it through Live Server as before.
+2. Press PLAY. SS01 should sound exactly as the locked CP03 build before Auto Mix begins to move anything.
+
+REGRESSION
+3. Confirm Play / Pause / Stop / Space still work.
+4. Confirm SS01 / SS02 switching still works.
+5. Confirm Volume / Pan / Filter / Mute / Solo / XFade still work.
+6. Confirm Tape Type / Character / Effects / Master Tone still work.
+
+AUTO MIX BASIC
+7. Auto Mix should show ON by default and ACTIVE only while transport is PLAYING.
+8. Press DEV: FORCE ONE EVENT several times. Watch which parameter is named under LAST MOVE / MOVING NOW and confirm the corresponding visible control moves smoothly and the audio follows it.
+9. With normal scheduling, wait roughly 10–20 seconds in Focus / 0%. Multiple parameters should begin evolving independently over time.
+10. Turn Auto Mix OFF. Current evolved values should freeze rather than reset. Turn it ON again; it should continue from the current values.
+
+ELIGIBILITY
+11. Mute one track, then use forced events / normal running. That track's Volume/Pan/Filter should not be automated while muted. Unmute it and it becomes eligible again.
+12. Turn an effect OFF. Its level should stop being automated, while its stored level remains visible. Turn it ON and it becomes eligible again.
+
+MANUAL TAKEOVER
+13. While a parameter is visibly moving under Auto Mix, grab that same slider manually and move it somewhere else. The automated move should stop immediately with no snap-back. The manual value becomes the new base; Auto Mix may touch it again only on a later event.
+14. Manual movement of a different parameter should not stop unrelated Auto Mix moves.
+
+FOCUS / RELAX / SLEEP + INTENSITY
+15. Focus / Relax / Sleep must be mutually exclusive and should change effect timing as previously agreed. Reverb level/IR must not be speed-modulated.
+16. Intensity runs from -50% to +50%. Confirm Tremolo / Delay / Width timing responds. It should not change effect DEPTH simply by moving Intensity.
+17. Auto Mix event frequency should become slower toward Sleep / -50% and faster toward Focus / +50%. Use normal listening over a few minutes rather than the FORCE button for this comparison.
+
+TRANSPORT + AUTOMATION
+18. PAUSE: Auto Mix motion/scheduling must stop and current values remain where they are. PLAY resumes automation from the evolved values.
+19. STOP: Auto Mix stops but the evolved mix remains. PLAY starts a fresh schedule from those current values; it must not reload the original preset.
+20. Soundscape change: loads the selected preset and starts a new Auto Mix baseline for that Soundscape. Mute/Solo still clear as before.
+
+PASS CRITERIA
+- No clicks/dropouts/regressions introduced.
+- Auto Mix changes real central state and therefore the visible controls and audio together.
+- No control snaps back after manual takeover.
+- Auto Mix OFF, mute and effect OFF exclusions are respected.
+- F/R/S + Intensity affect timing, not Auto Mix movement magnitude.
+
+FRS PLAYBACK VARISPEED
+- FOCUS: Soundscape playback is normal speed/pitch (100%).
+- RELAX: Soundscape playback is 75% speed, with tape-style pitch lowering.
+- SLEEP: Soundscape playback is 50% speed and one octave below Focus.
+- Change F/R/S while playing and confirm loop timing/XFade remain clean.
+- Intensity must NOT change Soundscape playback speed/pitch.
+
+SPECIAL EVENT DEV TEST
+- While PLAYING, note the current Delay and Reverb levels.
+- Press DEV: SPECIAL EVENT. Delay + Reverb should spike quickly to maximum, then recover slowly over about 5 seconds.
+- At the end, both controls must return to exactly the values they had before the event.
+- Switch AUTO MIX OFF during recovery: the already-triggered recovery must still finish.
+- Switch Delay or Reverb OFF during the event: that effect should become inaudible immediately, but its level should still recover underneath and be correct when switched back ON.
+- The DEV: SPECIAL EVENT button is intentionally disabled while one event is already active; overlapping special events remain a later listening-test decision.

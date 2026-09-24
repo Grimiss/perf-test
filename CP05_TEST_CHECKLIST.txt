@@ -1,0 +1,40 @@
+D8M4 CHECKPOINT 5 — PHYSICAL MACHINE RC1
+
+Purpose
+Prove that the generated empty-shell framework can host live D8M4 physical controls without changing the locked CP04 audio/automation engine.
+
+START
+1. Serve this extracted folder through VS Code Live Server (recommended).
+2. Do not double-click index.html directly from File Explorer.
+
+CORE REGRESSION
+[ ] First PLAY after refresh is clean (no startup crash/pop).
+[ ] PLAY / PAUSE / STOP behave exactly as CP04.
+[ ] Physical SPACE button and keyboard Space toggle PLAY/PAUSE.
+[ ] SS01 <-> SS02 switching remains clean.
+[ ] Auto Mix still moves the mix and follows F/R/S + Intensity.
+[ ] FOCUS / RELAX / SLEEP still change playback speed/pitch 100% / 75% / 50%.
+[ ] Special Event still spikes Delay + Reverb and recovers cleanly.
+
+PHYSICAL CONTROLS
+[ ] Soundscape 1/2 buttons work; 3-6 are visibly disabled.
+[ ] Transport button illumination/state is correct.
+[ ] Effect buttons toggle Trem/Delay/Reverb/Width without changing stored level.
+[ ] F/R/S buttons select one mode only.
+[ ] Intensity slider works from -50% to +50%.
+[ ] Brightness rocker dims/brightens the whole physical machine.
+[ ] Tone rocker changes Master Tone in both directions.
+[ ] Main Volume rocker changes final output volume.
+[ ] Game Volume rocker changes its stored 0-100% state (audible routing arrives with the Auxiliary bus/Game checkpoint).
+[ ] Rockers: short press steps; press-and-hold repeats; no centre-reset gesture.
+[ ] Green CRT OSD appears over the large CRT while a rocker is used.
+
+DISPLAY / SHELL
+[ ] Generated shell remains correctly proportioned at different browser sizes.
+[ ] Small CRT shows SS identity, CH1-4 Volume control values, Auto Mix and Transport.
+[ ] Large CRT dev screen follows transport/SS state.
+[ ] BUILD YOUR DRONE / CONTROL CENTRE / USER GUIDES, GAME/TV and Z/X currently show checkpoint placeholders only; their real screen systems are intentionally CP06/CP07.
+[ ] Sleep Timer controls are intentionally disabled until CP07.
+
+PASS CONDITION
+No CP01-CP04 behaviour is broken, the live physical controls reliably drive the same central state, and the generated-shell framework feels stable enough to become the D8M4 visual chassis.

@@ -1,0 +1,12 @@
+D8M4 CP06 Welcome 3-Layer Dev RC6 - Split Dev Windows
+
+Changes from RC5:
+- GRIMISS AMBIENT logo is baked into the locked background image, eliminating the visible square/patch around it.
+- Grouped DESIGN header now contains only DRONE MACHINE, red [D8M4], RGBY strip and strapline.
+- Development editor split into two independent draggable windows:
+  1) WELCOME DESIGN DEV
+  2) WELCOME LIVE ITEMS DEV
+- Both windows share one layout store and export one combined JSON.
+- Design text boxes now obey W/H values and wrap/reflow to the selected width.
+- Soundscape menu and rows no longer have hidden max-width constraints; W/H values override live CSS.
+- Existing phased Welcome flow and live typing behaviour are preserved.

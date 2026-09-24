@@ -1,0 +1,17 @@
+{
+  "design": {
+    "width": 762,
+    "height": 656
+  },
+  "scope": "D8M4 Welcome CRT split design/live dev",
+  "exportedAt": "2026-09-19T14:53:22.579Z",
+  "elements": {
+    "play-button": {
+      "layer": "live",
+      "x": 417,
+      "y": 363,
+      "w": 144,
+      "h": 36
+    }
+  }
+}

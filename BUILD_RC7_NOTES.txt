@@ -1,0 +1,6 @@
+RC7 fixes:
+- Restored clean generated background and composited GRIMISS AMBIENT with real transparency so no square patch remains.
+- Fixed split DESIGN/LIVE editor mode class mismatch that blocked click/drag editing.
+- Removed !important geometry locks that prevented W/H/X/Y changes from taking effect.
+- X/Y/W/H fields now apply on input as well as change.
+- New localStorage key prevents stale RC6 positions from masking the fixes.

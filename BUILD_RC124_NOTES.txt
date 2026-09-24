@@ -1,0 +1,15 @@
+D8M4 RC124 — FX STATION / PHYSICAL MODE BUTTON UPDATE
+
+Changes only:
+- Renamed visible CONTROL CENTRE labels to FX STATION (internal control-centre screen ID unchanged).
+- Physical CC button now reads FX / STATION.
+- Reworked CC header artwork title to FX STATION.
+- BYD DESIGN DEV and BYD LIVE DEV windows now default closed; they remain available from the DEV dock.
+- GAME / TV physical buttons now act as mode toggles and direct menu switches.
+- GAME pressed on the Game menu returns to Welcome.
+- TV pressed on the TV menu returns to Welcome.
+- Pressing the opposite mode on either menu switches directly to the other menu.
+- During active gameplay, GAME or TV opens the existing leave-game confirmation; confirming GAME returns to Game menu, confirming TV goes to TV menu; cancelling resumes play.
+- No audio, Auto Mix, FX Scope/Special Event, FRS, Frequency/Dropout/Loop, X-FADE or transport behaviour changed.
+
+Note: this baseline currently contains a TV placeholder rather than implemented channel playback, so the requested mirrored leave-channel confirmation cannot yet be wired to an active TV-channel runtime. The menu-level TV button behavior is implemented now.

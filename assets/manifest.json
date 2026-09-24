@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 3,
+  "assets": {
+    "D8M4_SS01_CH1": {
+      "type": "audio",
+      "path": "assets/audio/soundscapes/SS01/01 Prophet 5.wav",
+      "required": true
+    },
+    "D8M4_SS01_CH2": {
+      "type": "audio",
+      "path": "assets/audio/soundscapes/SS01/02 JP 8000.wav",
+      "required": true
+    },
+    "D8M4_SS01_CH3": {
+      "type": "audio",
+      "path": "assets/audio/soundscapes/SS01/03 Arp.wav",
+      "required": true
+    },
+    "D8M4_SS01_CH4": {
+      "type": "audio",
+      "path": "assets/audio/soundscapes/SS01/04 Bass Drone.wav",
+      "required": true
+    },
+    "D8M4_SS02_CH1": {
+      "type": "audio",
+      "path": "assets/audio/soundscapes/SS02/01 microKORG.wav",
+      "required": true
+    },
+    "D8M4_SS02_CH2": {
+      "type": "audio",
+      "path": "assets/audio/soundscapes/SS02/02 Pro 5 - Drone.wav",
+      "required": true
+    },
+    "D8M4_SS02_CH3": {
+      "type": "audio",
+      "path": "assets/audio/soundscapes/SS02/03 Tape Bass.wav",
+      "required": true
+    },
+    "D8M4_SS02_CH4": {
+      "type": "audio",
+      "path": "assets/audio/soundscapes/SS02/04 Casio CZ.wav",
+      "required": true
+    },
+    "D8M4_CHARACTER_AGE_NOISE": {
+      "type": "audio",
+      "path": "assets/audio/character/Age Noise Loop.wav",
+      "required": true
+    },
+    "D8M4_CHARACTER_TAPE_HISS": {
+      "type": "audio",
+      "path": "assets/audio/character/Tape Hiss Loop.wav",
+      "required": true
+    },
+    "D8M4_IR_ST_HALL_05": {
+      "type": "audio",
+      "path": "assets/audio/irs/04_ST_Hall_05.wav",
+      "required": true
+    },
+    "D8M4_GAME_BLOCKBUSTER_LOADING": {
+      "type": "video",
+      "path": "assets/video/loaders/D8M4_GAME_BLOCKBUSTER_LOADING.mp4",
+      "required": false
+    },
+    "D8M4_GAME_ALIENATTACK_LOADING": {
+      "type": "video",
+      "path": "assets/video/loaders/D8M4_GAME_ALIENATTACK_LOADING.mp4",
+      "required": false
+    },
+    "D8M4_GAME_MUSHROOMRUN_LOADING": {
+      "type": "video",
+      "path": "assets/video/loaders/D8M4_GAME_MUSHROOMRUN_LOADING.mp4",
+      "required": false
+    }
+  },
+  "checkpoint": "CP04_AUTOMATION_RC1"
+}

@@ -1,0 +1,1 @@
+RC4: stronger CC background crop; live control layout and behaviour unchanged.

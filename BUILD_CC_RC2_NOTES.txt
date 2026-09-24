@@ -1,0 +1,8 @@
+D8M4 CP06 CONTROL CENTRE DEV RC2
+Compact Control Centre layout rebuild.
+- Preserves more of the supplied starfield/planet/mountain/grid background.
+- Shorter four-channel bank.
+- More compact Effects / Radar / Character row.
+- Compact cyan vent detail.
+- Footer navigation remains WELCOME / BUILD YOUR DRONE / CLOSE.
+- Existing live control wiring and audio behaviour retained.

@@ -1,0 +1,49 @@
+D8M4 CHECKPOINT 3 — SOUND PROCESSING — RC1
+
+Run through VS Code / Live Server as with CP01 and CP02.
+
+1. REGRESSION
+- PLAY / PAUSE / STOP and Space toggle still work.
+- CH4 transport click remains acceptably controlled.
+- Volume / Pan / Filter / Mute / Solo still work.
+- Filter passes smoothly through centre with no dropout/click.
+- XFade is always ON; 1/2/3 work and 1 is default.
+- SS01 <-> SS02 switching still works while playing/stopped/paused.
+
+2. SS01 PRESET
+- Select/load SS01 and confirm its existing processing preset is restored:
+  Tape Type Normal; Age/Hiss/W&F 10%; Trem 19%; Delay 51%; Reverb 77%; Width 72%; all four effects ON.
+- SS02 remains a development preset: processing controls should load at zero/off unless adjusted manually.
+
+3. TAPE TYPE
+- NORMAL should be darkest/warmest.
+- CHROME should be more open than Normal.
+- METAL should be the most open/least coloured.
+- Switching tape type should be smooth rather than clicking.
+
+4. CHARACTER
+- AGE: increasing it should progressively wear/darken/rebalance the sound and add Age noise.
+- HISS: audible noise should increase smoothly.
+- W&F: increasing it should make pitch/time movement progressively more obvious.
+- AGE should also increase effective Hiss and W&F as in the reference engine.
+- PAUSE/STOP should silence Character noise while allowing existing Delay/Reverb tails to decay.
+
+5. EFFECTS
+- Each ON/OFF button should mute/restore that effect without losing its slider value.
+- TREM: depth changes smoothly and has stereo movement.
+- DELAY: depth changes wet level/feedback; no runaway feedback.
+- REVERB: uses the supplied ST Hall convolution IR and changes smoothly.
+- WIDTH: increases Dimension-style width/modulation smoothly.
+- Turning an effect OFF then ON should restore the previous level.
+
+6. MASTER TONE
+- Centre = neutral.
+- Left/WARM = more lows / fewer highs.
+- Right/BRIGHT = fewer lows / more highs.
+- Sweep through centre should be smooth.
+
+7. TAIL / TRANSPORT TEST
+- With Delay/Reverb clearly audible, press PAUSE and STOP.
+- Source audio should fade away safely, while existing Delay/Reverb tails decay naturally instead of being hard-cut.
+
+Report anything that sounds different from the previous tuned D8M4 engine, especially Reverb, Delay, Width or Character.

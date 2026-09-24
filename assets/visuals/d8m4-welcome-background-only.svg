@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="762" height="656" viewBox="0 0 762 656">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#01070b"/><stop offset="1" stop-color="#010305"/>
+    </linearGradient>
+    <radialGradient id="moonShade" cx="32%" cy="38%" r="75%">
+      <stop stop-color="#0a2833"/><stop offset=".55" stop-color="#04141a"/><stop offset="1" stop-color="#01090d"/>
+    </radialGradient>
+    <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse">
+      <rect width="4" height="4" fill="none"/><rect y="2" width="4" height="1" fill="#08212a" opacity=".42"/>
+    </pattern>
+    <pattern id="dots" width="8" height="8" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r=".65" fill="#0a4a5d" opacity=".35"/>
+    </pattern>
+    <filter id="glow"><feGaussianBlur stdDeviation="1.7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="762" height="656" fill="url(#bg)"/>
+  <rect width="762" height="656" fill="url(#dots)" opacity=".35"/>
+
+  <!-- star field -->
+  <g fill="#c9f6ff" opacity=".95">
+    <circle cx="476" cy="62" r="1.1"/><circle cx="512" cy="88" r="1.5"/><circle cx="552" cy="111" r="1.2"/>
+    <circle cx="621" cy="73" r="1.1"/><circle cx="666" cy="130" r="1.3"/><circle cx="599" cy="198" r="1.2"/>
+    <circle cx="491" cy="224" r="1.1"/><circle cx="451" cy="288" r="1.4"/><circle cx="563" cy="312" r="1.2"/>
+    <circle cx="391" cy="166" r="1.0"/><circle cx="343" cy="301" r="1.2"/><circle cx="305" cy="235" r="1.0"/>
+    <circle cx="268" cy="340" r="1.3"/><circle cx="208" cy="282" r="1.1"/><circle cx="154" cy="359" r="1.2"/>
+  </g>
+  <g stroke="#27dfff" stroke-width="1.3" opacity=".96" filter="url(#glow)">
+    <path d="M512 84h30M527 69v30"/><path d="M517 74l20 20M537 74l-20 20"/>
+    <path d="M478 274h28M492 260v28"/><path d="M482 264l20 20M502 264l-20 20"/>
+  </g>
+
+  <!-- circular moon -->
+  <g transform="translate(548,118)" fill="none" stroke="#24dfff" stroke-width="2" opacity=".95">
+    <circle cx="92" cy="92" r="91" fill="url(#moonShade)"/>
+    <path d="M92 1 A91 91 0 0 0 92 183" stroke="#e1fbff" stroke-width="6" opacity=".82"/>
+    <circle cx="65" cy="42" r="17"/><circle cx="107" cy="51" r="10"/><circle cx="73" cy="82" r="24"/>
+    <circle cx="125" cy="95" r="22"/><circle cx="51" cy="121" r="13"/><circle cx="93" cy="137" r="18"/>
+    <circle cx="138" cy="145" r="14"/><circle cx="49" cy="67" r="7"/><circle cx="111" cy="119" r="6"/>
+    <path d="M17 32c43 3 91 20 142 59M10 58c50 7 99 35 155 78M17 144c45-12 91-11 148 6" opacity=".5"/>
+  </g>
+
+  <!-- cyan mountain + water landscape -->
+  <g fill="none" stroke="#12d5ff" stroke-width="2" opacity=".95">
+    <path d="M0 470 L54 439 L104 466 L158 421 L209 454 L262 407 L316 455 L373 389 L429 441 L486 383 L544 431 L604 359 L666 421 L762 365"/>
+    <path d="M0 486 L54 455 L104 482 L158 437 L209 470 L262 423 L316 471 L373 405 L429 457 L486 399 L544 447 L604 375 L666 437 L762 381" opacity=".55"/>
+    <path d="M0 519 Q94 496 181 519 T366 515 T554 511 T762 505"/>
+    <path d="M0 533 Q109 508 208 532 T414 528 T622 522 T762 521" opacity=".72"/>
+  </g>
+  <g stroke="#0877bc" opacity=".46">
+    <path d="M0 548h762"/><path d="M0 561h762"/><path d="M0 574h762"/><path d="M0 587h762"/><path d="M0 600h762"/><path d="M0 613h762"/>
+  </g>
+  <path d="M383 510c-7 12-12 28-16 50M383 510c6 13 12 31 16 50M383 510c-17 20-30 39-42 61M383 510c18 21 31 40 43 61" stroke="#75f5ff" stroke-width="2" opacity=".5"/>
+
+  <rect width="762" height="656" fill="url(#scan)" opacity=".75"/>
+</svg>

@@ -1,0 +1,6 @@
+D8M4 CP06 Welcome 3-Layer Dev RC5
+- Cleaned faint remnants of old header from locked background artwork.
+- GRIMISS AMBIENT header now uses supplied segmented/scanline logo reference.
+- Fixed editable live typed guidance so edits persist without destroying cursor/typing DOM.
+- Added individual W/H resizing for BUILD YOUR DRONE, CONTROL CENTRE and USER GUIDES buttons.
+- Existing phased Welcome flow and prior layout retained.

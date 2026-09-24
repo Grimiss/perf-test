@@ -1,0 +1,97 @@
+{
+  "design": {
+    "width": 762,
+    "height": 656
+  },
+  "scope": "D8M4 Welcome CRT split design/live dev",
+  "exportedAt": "2026-09-24T09:25:11.792Z",
+  "elements": {
+    "header-block": {
+      "layer": "design",
+      "x": 44,
+      "y": 95,
+      "w": 384,
+      "h": 109
+    },
+    "typed-line": {
+      "layer": "live",
+      "x": 40,
+      "y": 13,
+      "w": 441,
+      "h": 589,
+      "text": "Welcome to planet AMBIENT. Here you can create you own evolving soundscape.\n\nFirst BUILD YOUR DRONE by setting channel volumes and effect levels. Then create some movement to it in the FX STATION.\n\nAt any point, you can relax and listen to your mix via TV MODE, or let GAME MODE take over!\n\nRemember that there are no right or wrong settings - just play around and see what happens (and there's always the USER GUIDES button to help you out!)\n\nPlease choose your destination: ",
+      "fontSize": 15,
+      "letterSpacing": 0,
+      "color": "#ffe21d",
+      "textAlign": "left"
+    },
+    "cc-button": {
+      "layer": "live",
+      "x": 500,
+      "y": 501,
+      "w": 229,
+      "h": 22
+    },
+    "byd-button": {
+      "layer": "live",
+      "x": 500,
+      "y": 474,
+      "w": 229,
+      "h": 22
+    },
+    "ug-button": {
+      "layer": "live",
+      "x": 500,
+      "y": 583,
+      "w": 229,
+      "h": 22
+    },
+    "tv-button": {
+      "layer": "live",
+      "x": 500,
+      "y": 528,
+      "w": 229,
+      "h": 22
+    },
+    "game-button": {
+      "layer": "live",
+      "x": 500,
+      "y": 555,
+      "w": 229,
+      "h": 22
+    },
+    "soundscape-menu": {
+      "layer": "live",
+      "x": 41,
+      "y": 276,
+      "w": 354,
+      "h": 177
+    },
+    "play-button": {
+      "layer": "live",
+      "x": 404,
+      "y": 416,
+      "w": 144,
+      "h": 36
+    },
+    "instruction": {
+      "layer": "design",
+      "x": 41,
+      "y": 251,
+      "w": 588,
+      "h": 34,
+      "text": "Choose a soundscape and then press play",
+      "fontSize": 13,
+      "letterSpacing": -1.8,
+      "color": "#ffe21d",
+      "textAlign": "left"
+    },
+    "brand-logo": {
+      "layer": "design",
+      "x": 40,
+      "y": 39,
+      "w": 260,
+      "h": 70
+    }
+  }
+}

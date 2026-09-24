@@ -1,0 +1,28 @@
+{
+  "page": "cc",
+  "layer": "design",
+  "title": "CC DESIGN DEV",
+  "storageKey": "D84M_RC113_CC_DESIGN_DEV",
+  "coordinateSpace": "screen",
+  "design": {
+    "width": 762,
+    "height": 656
+  },
+  "exportedAt": "2026-09-23T07:00:57.643Z",
+  "elements": [
+    {
+      "key": "header",
+      "x": -8,
+      "y": -4,
+      "w": 789,
+      "h": 107
+    },
+    {
+      "key": "footer",
+      "x": -5,
+      "y": 576,
+      "w": 772,
+      "h": 88
+    }
+  ]
+}

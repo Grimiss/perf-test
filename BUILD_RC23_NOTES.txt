@@ -1,0 +1,7 @@
+D84M CP06 CRT EXPERIENCE RC23 — REFERENCE MATCH
+- Code-only Control Centre redesign based on approved reference.
+- Restored full, uncropped header/background framing.
+- Enlarged central FX MOD scope and surrounding instrument panels.
+- Enlarged channel controls and bottom utility panels.
+- Added subtle scope grid in CSS.
+- Retains RC20 Infinity physics, RC19 interaction fix, hold modes and all live controls.

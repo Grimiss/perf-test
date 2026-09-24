@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="762" height="656" viewBox="0 0 762 656">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#01070b"/><stop offset="1" stop-color="#010405"/></linearGradient>
+    <linearGradient id="cyan" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#ffffff"/><stop offset=".35" stop-color="#83efff"/><stop offset="1" stop-color="#00bfe9"/></linearGradient>
+    <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="4" fill="none"/><rect y="2" width="4" height="1" fill="#08212a" opacity=".38"/></pattern>
+    <pattern id="dots" width="8" height="8" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r=".7" fill="#0a4a5d" opacity=".5"/></pattern>
+    <filter id="glow"><feGaussianBlur stdDeviation="2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect width="762" height="656" fill="url(#bg)"/>
+  <rect width="762" height="656" fill="url(#dots)" opacity=".45"/>
+
+  <!-- title block -->
+  <g font-family="monospace" letter-spacing="4" filter="url(#glow)">
+    <text x="78" y="83" fill="url(#cyan)" font-size="62" font-weight="700">GRIMISS</text>
+    <text x="82" y="126" fill="#e7f6ff" font-size="32" font-weight="700">AMBIENT</text>
+    <text x="82" y="165" fill="#20d9ff" font-size="31" font-weight="700" letter-spacing="1.5">DRONE MACINE [D8M4]</text>
+  </g>
+  <g transform="translate(81,178)">
+    <rect width="98" height="19" fill="#ff2638"/><rect x="98" width="98" height="19" fill="#22d84a"/><rect x="196" width="98" height="19" fill="#1c88ff"/><rect x="294" width="98" height="19" fill="#ffe21d"/>
+  </g>
+  <text x="82" y="224" fill="#21e5ff" font-family="monospace" font-size="15" letter-spacing="1.6">AMBIENT SOUNDSCAPES FOR A CALMER MIND</text>
+
+  <!-- stars -->
+  <g fill="#c9f6ff" opacity=".95">
+    <circle cx="511" cy="81" r="1.5"/><circle cx="552" cy="107" r="2"/><circle cx="474" cy="133" r="1.2"/><circle cx="641" cy="107" r="1.5"/><circle cx="602" cy="211" r="1.4"/><circle cx="489" cy="240" r="1.2"/>
+  </g>
+  <g stroke="#2bdfff" stroke-width="1.3" opacity=".95"><path d="M512 87h26M525 74v26"/><path d="M510 87l9-9M510 87l9 9M540 87l-9-9M540 87l-9 9"/><path d="M557 296h26M570 283v26"/></g>
+
+  <!-- planet/moon -->
+  <g transform="translate(604,165)" fill="none" stroke="#25dfff" stroke-width="2" opacity=".92">
+    <path d="M0 0 A137 137 0 0 1 0 274 A137 137 0 0 1 0 0Z" fill="#03141a"/>
+    <path d="M0 0 A137 137 0 0 0 0 274" stroke="#d9fbff" stroke-width="8" opacity=".9"/>
+    <circle cx="62" cy="48" r="18"/><circle cx="38" cy="96" r="26"/><circle cx="88" cy="127" r="31"/><circle cx="42" cy="174" r="20"/><circle cx="104" cy="211" r="24"/><circle cx="80" cy="72" r="7"/><circle cx="75" cy="168" r="9"/><circle cx="29" cy="221" r="15"/>
+    <path d="M-4 30c45 4 90 22 126 56M-3 56c54 7 98 34 132 74M-1 219c44-14 91-14 137 7" opacity=".65"/>
+  </g>
+
+  <!-- retro terrain -->
+  <g fill="none" stroke="#11cfff" stroke-width="2" opacity=".95">
+    <path d="M0 520 L68 493 L115 516 L171 474 L224 505 L277 455 L332 497 L388 430 L448 482 L505 420 L566 459 L618 389 L684 449 L762 405"/>
+    <path d="M0 535 L68 508 L115 530 L171 488 L224 520 L277 470 L332 513 L388 447 L448 498 L505 438 L566 477 L618 407 L684 468 L762 425" opacity=".7"/>
+    <path d="M0 549 Q95 530 179 551 T365 546 T555 542 T762 537"/>
+    <path d="M0 561 Q110 542 210 562 T418 558 T624 552 T762 550" opacity=".75"/>
+  </g>
+  <g stroke="#0788d8" opacity=".48"><path d="M0 580h762"/><path d="M0 592h762"/><path d="M0 604h762"/><path d="M0 616h762"/></g>
+
+  <text x="58" y="622" fill="#24e7ff" font-family="monospace" font-size="15" letter-spacing="1.3">© 1984 GRIMISS AMBIENT</text>
+  <rect width="762" height="656" fill="url(#scan)" opacity=".7"/>
+</svg>

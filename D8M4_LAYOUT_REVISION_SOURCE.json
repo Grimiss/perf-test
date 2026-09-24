@@ -1,0 +1,21 @@
+{
+  "design": {
+    "width": 1536,
+    "height": 1024
+  },
+  "exportedAt": "2026-09-19T07:19:07.125Z",
+  "elements": {
+    "#utility-panel": {
+      "x": 1057,
+      "y": 793,
+      "w": 453,
+      "h": 66
+    },
+    "future:Z / UP / LEFT": {
+      "x": 29,
+      "y": 893,
+      "w": 129,
+      "h": 81
+    }
+  }
+}
