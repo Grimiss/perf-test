@@ -5771,3 +5771,11 @@ body.welcome-live-edit .welcome-path-stack .welcome-path-button{
 /* Keep welcome emphasis but avoid repeatedly filtering glowing buttons. */
 @keyframes rc201PerfPulse{0%,100%{opacity:.86}50%{opacity:1}}
 .d8m4-pulse-button:not(:hover):not(:focus-visible):not(.menu-hovered){animation:rc201PerfPulse 2.2s ease-in-out infinite!important;filter:none!important;}
+
+/* RC202 PERFORMANCE — live numeric readouts removed; lighter moving-control paint. */
+#crt-screen-root .byd2-screen .byd2-param-head,
+#crt-screen-root .cc3-screen .cc3-param-head{justify-content:flex-start!important;}
+#crt-screen-root .byd2-screen .byd2-global-row,
+#crt-screen-root .cc3-screen .cc3-effect-sliderline{grid-template-columns:auto 1fr!important;}
+#crt-screen-root .cc3-screen .cc2-track-dot{transition:none!important;}
+#crt-screen-root .cc3-screen .cc2-fxmod-nav{transition:none!important;}

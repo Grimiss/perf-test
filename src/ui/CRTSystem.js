@@ -48,11 +48,23 @@ export class CRTSystem {
     this.scopeSweepFrame = null;
     this.scopeMarkerX = 0;
     this.scopeMarkerY = 0;
+    this.domCache = new Map();
+    this.scopeLastFrameMs = 0;
     this.bind();
     document.addEventListener('visibilitychange',()=>{
       if(document.hidden) this.stopScopeSweepClock();
       else if(this.currentScreen==='control-centre') this.startScopeSweepClock();
     });
+  }
+
+  clearDomCache() { this.domCache.clear(); }
+
+  cached(selector, all=false) {
+    const key=(all?'A:':'Q:')+selector;
+    if(this.domCache.has(key)) return this.domCache.get(key);
+    const value=all?[...this.root.querySelectorAll(selector)]:this.root.querySelector(selector);
+    this.domCache.set(key,value);
+    return value;
   }
 
   startScopeSweepClock() {
@@ -62,8 +74,11 @@ export class CRTSystem {
         this.scopeSweepFrame = null;
         return;
       }
+      const nowMs=performance.now();
+      if(nowMs-this.scopeLastFrameMs<32){ this.scopeSweepFrame=window.requestAnimationFrame(tick); return; }
+      this.scopeLastFrameMs=nowMs;
       const state = this.store.getState();
-      const sweep = this.root.querySelector('.cc2-radar-sweep');
+      const sweep = this.cached('.cc2-radar-sweep');
       if (sweep) {
         const cycle = Number(state.fxMod?.scopeCycleMs) || (state.frs === 'sleep' ? 12800 : state.frs === 'relax' ? 6400 : 3200);
         const epoch = Number(state.fxMod?.scopeEpochMs) || Date.now();
@@ -73,7 +88,7 @@ export class CRTSystem {
         sweep.style.transform = `rotate(${angle}deg)`;
         sweep.dataset.frs = state.frs;
       }
-      const nav = this.root.querySelector('.cc2-fxmod-nav');
+      const nav = this.cached('.cc2-fxmod-nav');
       if (nav && !this.interacting) {
         const x = Math.max(-1,Math.min(1,Number(state.fxMod?.x)||0));
         const y = Math.max(-1,Math.min(1,Number(state.fxMod?.y)||0));
@@ -138,8 +153,6 @@ export class CRTSystem {
         const clamped=Math.max(0,Math.min(1,raw));
         const value=Math.round(clamped*100);
         slider.value=String(value);
-        const readout=this.root.querySelector(`[data-readout="track-volume"][data-index="${index}"]`);
-        if (readout) readout.textContent=String(value);
         this.controller.setTrackVolume(index,value/100);
       };
       const move=(ev)=>{ if (ev.pointerId===e.pointerId) apply(ev); };
@@ -264,22 +277,6 @@ export class CRTSystem {
       if (!(el instanceof HTMLInputElement)) return;
       const kind = el.dataset.kind;
       const value = Number(el.value);
-      // Keep every visible slider readout live while the pointer is moving.
-      // State renders are intentionally deferred during interaction, so update the
-      // mounted readout directly before committing the same value to shared state.
-      const index = el.dataset.index;
-      const name = el.dataset.name;
-      const selector = kind === 'intensity'
-        ? `[data-readout="intensity"]`
-        : (index !== undefined
-          ? `[data-readout="${kind}"][data-index="${index}"]`
-          : `[data-readout="${kind}"][data-name="${name}"]`);
-      const readout = kind ? this.root.querySelector(selector) : null;
-      if (readout) {
-        if (kind === 'effect-level' || kind === 'character') readout.textContent=(value/10).toFixed(1);
-        else if (kind === 'intensity') readout.textContent=`${Math.round(value)}%`;
-        else readout.textContent=String(Math.round(value));
-      }
 
       if (kind === 'track-volume') this.controller.setTrackVolume(Number(el.dataset.index), value / 100);
       else if (kind === 'track-pan') this.controller.setTrackPan(Number(el.dataset.index), value / 100);
@@ -367,6 +364,8 @@ export class CRTSystem {
       return;
     }
 
+    this.clearDomCache();
+
     if (screen === 'welcome') this.renderWelcome(state);
     else if (screen === 'byd') this.renderBYD(state);
     else if (screen === 'control-centre') this.renderControlCentre(state);
@@ -381,16 +380,19 @@ export class CRTSystem {
 
   patchScreen(state, screen=this.currentScreen) {
     const setRange = (selector, value) => {
-      const el = this.root.querySelector(selector);
+      const el = this.cached(selector);
       if (!el || el === document.activeElement || this.interacting) return;
-      el.value = String(value);
+      const next=String(value);
+      if(el.value!==next) el.value=next;
     };
     const setText = (selector, value) => {
-      const el = this.root.querySelector(selector);
-      if (el) el.textContent = String(value);
+      const el = this.cached(selector);
+      if (!el) return;
+      const next=String(value);
+      if(el.textContent!==next) el.textContent=next;
     };
     const toggle = (selector, active, className='active') => {
-      const el = this.root.querySelector(selector);
+      const el = this.cached(selector);
       if (el) el.classList.toggle(className, Boolean(active));
     };
 
@@ -402,9 +404,8 @@ export class CRTSystem {
           ['track-filter','filter',100]
         ]) {
           setRange(`input[data-kind="${kind}"][data-index="${i}"]`, Math.round(track[param]*scale));
-          setText(`[data-readout="${kind}"][data-index="${i}"]`, Math.round(track[param]*scale));
         }
-        this.root.querySelectorAll(`[data-action="xfade"][data-index="${i}"]`).forEach(el =>
+        this.cached(`[data-action="xfade"][data-index="${i}"]`,true).forEach(el =>
           el.classList.toggle('active', Number(el.dataset.choice) === track.xfade));
         setText(`[data-frequency-mode][data-index="${i}"]`, track.frequencyMode === 'loop' ? 'LOOP' : track.frequencyMode === 'dropout' ? 'DROPOUT' : 'FREQUENCY');
         setText(`[data-frequency-value][data-index="${i}"]`, track.frequency ?? 1);
@@ -416,11 +417,9 @@ export class CRTSystem {
       });
       for (const name of ['tremolo','delay','reverb','width']) {
         setRange(`input[data-kind="effect-level"][data-name="${name}"]`, Math.round(state.effects[name].level*100));
-        setText(`[data-readout="effect-level"][data-name="${name}"]`, (state.effects[name].level*10).toFixed(1));
       }
       for (const name of ['age','hiss','wowFlutter']) {
         setRange(`input[data-kind="character"][data-name="${name}"]`, Math.round(state.character[name]*100));
-        setText(`[data-readout="character"][data-name="${name}"]`, (state.character[name]*10).toFixed(1));
       }
       this.root.querySelectorAll('[data-action="effect"]').forEach(el => {
         const enabled=Boolean(state.effects[el.dataset.name]?.enabled);
@@ -444,9 +443,8 @@ export class CRTSystem {
           ['track-filter','filter',100]
         ]) {
           setRange(`input[data-kind="${kind}"][data-index="${i}"]`, Math.round(track[param]*scale));
-          setText(`[data-readout="${kind}"][data-index="${i}"]`, Math.round(track[param]*scale));
         }
-        this.root.querySelectorAll(`[data-action="xfade"][data-index="${i}"]`).forEach(el =>
+        this.cached(`[data-action="xfade"][data-index="${i}"]`,true).forEach(el =>
           el.classList.toggle('active', Number(el.dataset.choice) === track.xfade));
         toggle(`[data-action="mute"][data-index="${i}"]`, track.mute);
         toggle(`[data-action="solo"][data-index="${i}"]`, track.solo);
@@ -454,7 +452,6 @@ export class CRTSystem {
 
       for (const name of ['tremolo','delay','reverb','width']) {
         setRange(`input[data-kind="effect-level"][data-name="${name}"]`, Math.round(state.effects[name].level*100));
-        setText(`[data-readout="effect-level"][data-name="${name}"]`, (state.effects[name].level*10).toFixed(1));
         const btn = this.root.querySelector(`[data-action="effect"][data-name="${name}"]`);
         if (btn) {
           const enabled=Boolean(state.effects[name].enabled);
@@ -468,7 +465,6 @@ export class CRTSystem {
 
       for (const name of ['age','hiss','wowFlutter']) {
         setRange(`input[data-kind="character"][data-name="${name}"]`, Math.round(state.character[name]*100));
-        setText(`[data-readout="character"][data-name="${name}"]`, (state.character[name]*10).toFixed(1));
       }
 
       this.root.querySelectorAll('[data-action="tape"]').forEach(el =>
@@ -501,7 +497,6 @@ export class CRTSystem {
       this.root.querySelectorAll('[data-action="fxmod-param"]').forEach(b=>b.classList.toggle('active',enabledParams[b.dataset.param]!==false));
       this.root.querySelectorAll('[data-action="frs"]').forEach(el=>el.classList.toggle('active',el.dataset.mode===state.frs));
       setRange('input[data-kind="intensity"]', Math.round(state.intensity*50));
-      setText('[data-readout="intensity"]', `${Math.round(state.intensity*50)}%`);
       state.tracks.forEach((track,i)=>{const dot=this.root.querySelector(`[data-track-dot="${i}"]`);if(!dot)return;const x=50+(track.pan||0)*38,y=50-(track.filter||0)*38;dot.style.left=`${x}%`;dot.style.top=`${y}%`;dot.style.opacity=String(.45+Math.max(0,Math.min(1,track.volume||0))*.55);dot.style.transform=`translate(-50%,-50%) scale(${.75+Math.max(0,Math.min(1,track.volume||0))*.55})`;});
       return;
     }
@@ -926,21 +921,21 @@ Choose your destination:  "><div class="spectrum-typed-line"><span class="typed-
         ['LOOP VOL','track-volume','volume',0,100,Math.round(t.volume*100),Math.round(t.volume*100)],
         ['PAN','track-pan','pan',-100,100,Math.round(t.pan*100),Math.round(t.pan*100)],
         ['FILTER','track-filter','filter',-100,100,Math.round(t.filter*100),Math.round(t.filter*100)]
-      ].map(([label,kind,param,min,max,val,txt])=>`<div class="byd2-param"><div class="byd2-param-head"><span>${label}</span><b data-readout="${kind}" data-index="${i}">${txt}</b></div><div class="byd2-slider-wrap"><i class="byd2-mid" aria-hidden="true"></i><input class="byd2-slider" data-kind="${kind}" data-reset="track" data-param="${param}" data-index="${i}" type="range" min="${min}" max="${max}" value="${val}"></div></div>`).join('')}
+      ].map(([label,kind,param,min,max,val,txt])=>`<div class="byd2-param"><div class="byd2-param-head"><span>${label}</span></div><div class="byd2-slider-wrap"><i class="byd2-mid" aria-hidden="true"></i><input class="byd2-slider" data-kind="${kind}" data-reset="track" data-param="${param}" data-index="${i}" type="range" min="${min}" max="${max}" value="${val}"></div></div>`).join('')}
       <div class="byd2-ms"><button data-action="mute" data-index="${i}" data-menu-item class="byd2-button ${t.mute?'active':''}">MUTE</button><button data-action="solo" data-index="${i}" data-menu-item class="byd2-button ${t.solo?'active':''}">SOLO</button></div>
       <div class="byd2-xf-title">X-FADE</div>
       <div class="byd2-xf">${[1,2,3].map(c=>`<button data-action="xfade" data-index="${i}" data-choice="${c}" data-menu-item class="byd2-button byd2-xf-button ${t.xfade===c?'active':''}">${c}</button>`).join('')}</div>
       <div class="byd2-frequency"><button data-action="frequency-mode" data-index="${i}" data-menu-item class="byd2-button byd2-frequency-mode" aria-label="Loop, Frequency or Dropout mode"><span data-frequency-mode data-index="${i}">${t.frequencyMode==='loop'?'LOOP':t.frequencyMode==='dropout'?'DROPOUT':'FREQUENCY'}</span></button><div class="byd2-frequency-controls"><button data-action="frequency" data-index="${i}" data-menu-item class="byd2-button byd2-frequency-value" aria-label="Frequency or Dropout count"><b data-frequency-value data-index="${i}">${t.frequency??1}</b></button><button data-action="frequency-random" data-index="${i}" data-menu-item class="byd2-button byd2-frequency-random ${t.frequencyRandom?'active':''}" aria-pressed="${t.frequencyRandom?'true':'false'}">RND</button></div></div>
     </section>`).join('');
 
-    const effects=['tremolo','delay','reverb','width'].map(name=>`<div class="byd2-global-row byd2-fx-${name}"><button data-action="effect" data-name="${name}" data-menu-item aria-pressed="${state.effects[name].enabled?'true':'false'}" class="byd2-label-toggle ${state.effects[name].enabled?'active':''}">${name==='tremolo'?'TREM':name.toUpperCase()}</button><input class="${state.effects[name].enabled?'':'fx-off'}" data-kind="effect-level" data-reset="effect" data-name="${name}" type="range" min="0" max="100" value="${Math.round(state.effects[name].level*100)}"><b data-readout="effect-level" data-name="${name}">${(state.effects[name].level*10).toFixed(1)}</b></div>`).join('');
-    const chars=[['age','AGE'],['hiss','HISS'],['wowFlutter','W & F']].map(([name,label])=>`<div class="byd2-global-row byd2-char-row"><span>${label}</span><input data-kind="character" data-reset="character" data-name="${name}" type="range" min="0" max="100" value="${Math.round(state.character[name]*100)}"><b data-readout="character" data-name="${name}">${(state.character[name]*10).toFixed(1)}</b></div>`).join('');
+    const effects=['tremolo','delay','reverb','width'].map(name=>`<div class="byd2-global-row byd2-fx-${name}"><button data-action="effect" data-name="${name}" data-menu-item aria-pressed="${state.effects[name].enabled?'true':'false'}" class="byd2-label-toggle ${state.effects[name].enabled?'active':''}">${name==='tremolo'?'TREM':name.toUpperCase()}</button><input class="${state.effects[name].enabled?'':'fx-off'}" data-kind="effect-level" data-reset="effect" data-name="${name}" type="range" min="0" max="100" value="${Math.round(state.effects[name].level*100)}"></div>`).join('');
+    const chars=[['age','AGE'],['hiss','HISS'],['wowFlutter','W & F']].map(([name,label])=>`<div class="byd2-global-row byd2-char-row"><span>${label}</span><input data-kind="character" data-reset="character" data-name="${name}" type="range" min="0" max="100" value="${Math.round(state.character[name]*100)}"></div>`).join('');
 
     this.root.innerHTML=`<div class="crt-screen byd-screen byd2-screen" data-dev-page="byd">
       <header data-dev-layer="design" data-dev-key="header" class="d8m4-zone-header" aria-label="Empty header placeholder"></header>
       <main class="d8m4-zone-main byd2-main">
         <div class="byd2-channel-row">${channels}</div>
-        <section data-dev-layer="live" data-dev-key="effects" class="byd2-panel byd2-effects"><div class="byd2-panel-title">EFFECTS</div>${effects}<div class="byd2-intensity"><div class="byd2-intensity-head"><span>INTENSITY</span><b data-readout="intensity">${Math.round(state.intensity*50)}%</b></div><input data-kind="intensity" type="range" min="-50" max="50" value="${Math.round(state.intensity*50)}"></div></section>
+        <section data-dev-layer="live" data-dev-key="effects" class="byd2-panel byd2-effects"><div class="byd2-panel-title">EFFECTS</div>${effects}<div class="byd2-intensity"><div class="byd2-intensity-head"><span>INTENSITY</span></div><input data-kind="intensity" type="range" min="-50" max="50" value="${Math.round(state.intensity*50)}"></div></section>
         <section data-dev-layer="live" data-dev-key="character" class="byd2-panel byd2-character"><div class="byd2-panel-title">CHARACTER</div>${chars}<div class="byd2-tape"><span>TAPE TYPE</span><button data-action="tape" data-type="normal" data-menu-item class="byd2-button ${state.tapeType==='normal'?'active':''}">NORMAL</button><button data-action="tape" data-type="chrome" data-menu-item class="byd2-button ${state.tapeType==='chrome'?'active':''}">CHROME</button><button data-action="tape" data-type="metal" data-menu-item class="byd2-button ${state.tapeType==='metal'?'active':''}">METAL</button></div></section>
         <div class="byd2-page-nav byd2-page-nav-bottom"><button data-menu-item data-action="secondary-screen" data-screen="control-centre">FX STATION</button><button data-menu-item data-action="close-secondary">CLOSE</button></div>
       </main>
@@ -956,10 +951,10 @@ Choose your destination:  "><div class="spectrum-typed-line"><span class="typed-
       ${[
         ['PAN','track-pan','pan',-100,100,Math.round(t.pan*100),Math.round(t.pan*100)],
         ['FILTER','track-filter','filter',-100,100,Math.round(t.filter*100),Math.round(t.filter*100)]
-      ].map(([label,kind,param,min,max,val,txt])=>`<div class="cc3-param"><div class="cc3-param-head"><span>${label}</span><b data-readout="${kind}" data-index="${i}">${txt}</b></div><div class="cc3-slider-wrap"><i class="cc3-mid" aria-hidden="true"></i><input class="cc3-slider" data-kind="${kind}" data-reset="track" data-param="${param}" data-index="${i}" type="range" min="${min}" max="${max}" value="${val}"></div></div>`).join('')}
+      ].map(([label,kind,param,min,max,val,txt])=>`<div class="cc3-param"><div class="cc3-param-head"><span>${label}</span></div><div class="cc3-slider-wrap"><i class="cc3-mid" aria-hidden="true"></i><input class="cc3-slider" data-kind="${kind}" data-reset="track" data-param="${param}" data-index="${i}" type="range" min="${min}" max="${max}" value="${val}"></div></div>`).join('')}
       <div class="cc3-ms"><button data-action="mute" data-index="${i}" data-menu-item class="cc3-button ${t.mute?'active':''}">MUTE</button><button data-action="solo" data-index="${i}" data-menu-item class="cc3-button ${t.solo?'active':''}">SOLO</button></div>
     </section>`).join('');
-    const fx=['tremolo','delay','reverb','width'].map(name=>`<div class="cc3-effect-card cc3-fx-${name}"><div class="cc3-effect-top"><button data-action="effect" data-name="${name}" data-menu-item aria-pressed="${state.effects[name].enabled?'true':'false'}" class="cc3-label-toggle ${state.effects[name].enabled?'active':''}">${name==='tremolo'?'TREMOLO':name.toUpperCase()}</button></div><div class="cc3-effect-sliderline"><input class="${state.effects[name].enabled?'':'fx-off'}" data-kind="effect-level" data-reset="effect" data-name="${name}" type="range" min="0" max="100" value="${Math.round(state.effects[name].level*100)}"><b data-readout="effect-level" data-name="${name}">${(state.effects[name].level*10).toFixed(1)}</b></div></div>`).join('');
+    const fx=['tremolo','delay','reverb','width'].map(name=>`<div class="cc3-effect-card cc3-fx-${name}"><div class="cc3-effect-top"><button data-action="effect" data-name="${name}" data-menu-item aria-pressed="${state.effects[name].enabled?'true':'false'}" class="cc3-label-toggle ${state.effects[name].enabled?'active':''}">${name==='tremolo'?'TREMOLO':name.toUpperCase()}</button></div><div class="cc3-effect-sliderline"><input class="${state.effects[name].enabled?'':'fx-off'}" data-kind="effect-level" data-reset="effect" data-name="${name}" type="range" min="0" max="100" value="${Math.round(state.effects[name].level*100)}"></div></div>`).join('');
 
     const fxTimeValue=(state.fxMod.timeMode||'01').replace(/^0/,'');
     const fxProbValue=String(state.fxMod.probMode||'x1').toUpperCase();
@@ -969,7 +964,7 @@ Choose your destination:  "><div class="spectrum-typed-line"><span class="typed-
     this.root.innerHTML=`<div class="crt-screen cc2-screen ccv2-screen cc3-screen" data-dev-page="cc">
       <header data-dev-layer="design" data-dev-key="header" class="d8m4-zone-header" aria-label="Empty header placeholder"></header>
       <main class="d8m4-zone-main cc3-main">
-        <section data-dev-layer="live" data-dev-key="effects" class="cc3-panel cc3-effects"><div class="cc3-panel-title">EFFECTS</div><div class="cc3-effects-grid">${fx}</div><div class="cc3-intensity"><span>INTENSITY</span><div class="cc3-intensity-sliderline"><input data-kind="intensity" type="range" min="-50" max="50" value="${Math.round(state.intensity*50)}"><b data-readout="intensity">${Math.round(state.intensity*50)}%</b></div></div></section>
+        <section data-dev-layer="live" data-dev-key="effects" class="cc3-panel cc3-effects"><div class="cc3-panel-title">EFFECTS</div><div class="cc3-effects-grid">${fx}</div><div class="cc3-intensity"><span>INTENSITY</span><div class="cc3-intensity-sliderline"><input data-kind="intensity" type="range" min="-50" max="50" value="${Math.round(state.intensity*50)}"></div></div></section>
         ${scope}
         ${fxOptions}
         <div class="cc3-channel-group-frame" aria-hidden="true"></div><div class="cc3-channel-row">${channels}</div>
