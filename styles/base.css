@@ -5779,3 +5779,79 @@ body.welcome-live-edit .welcome-path-stack .welcome-path-button{
 #crt-screen-root .cc3-screen .cc3-effect-sliderline{grid-template-columns:auto 1fr!important;}
 #crt-screen-root .cc3-screen .cc2-track-dot{transition:none!important;}
 #crt-screen-root .cc3-screen .cc2-fxmod-nav{transition:none!important;}
+
+
+/* RC203 PERFORMANCE — simplify duplicated controls and reduce touch/paint overhead. */
+#crt-screen-root,
+#crt-screen-root .crt-screen,
+#crt-screen-root button,
+#crt-screen-root input,
+#crt-screen-root span,
+#crt-screen-root div{
+  -webkit-user-select:none!important;
+  user-select:none!important;
+  -webkit-touch-callout:none!important;
+}
+#crt-screen-root input[type="range"]{touch-action:none!important;}
+
+/* BYD: core track construction only. Filters + Effects live on FX STATION. */
+#crt-screen-root .byd2-screen .d8m4-zone-main [data-dev-key="ch1"],
+#crt-screen-root .byd2-screen .d8m4-zone-main [data-dev-key="ch2"],
+#crt-screen-root .byd2-screen .d8m4-zone-main [data-dev-key="ch3"],
+#crt-screen-root .byd2-screen .d8m4-zone-main [data-dev-key="ch4"]{
+  top:2%!important;
+  height:48%!important;
+}
+#crt-screen-root .byd2-screen .d8m4-zone-main [data-dev-key="character"]{
+  left:1%!important;
+  top:53%!important;
+  width:98%!important;
+  height:34%!important;
+}
+#crt-screen-root .byd2-screen .byd2-character{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-template-rows:auto 1fr auto!important;
+  column-gap:14px!important;
+  align-items:center!important;
+}
+#crt-screen-root .byd2-screen .byd2-character .byd2-panel-title{
+  grid-column:1/-1!important;
+}
+#crt-screen-root .byd2-screen .byd2-character .byd2-global-row{
+  grid-template-columns:48px minmax(0,1fr)!important;
+  min-height:30px!important;
+}
+#crt-screen-root .byd2-screen .byd2-tape{
+  grid-column:1/-1!important;
+  grid-template-columns:80px repeat(3,minmax(0,1fr))!important;
+}
+#crt-screen-root .byd2-screen .byd2-page-nav-bottom{
+  left:1%!important;
+  right:1%!important;
+  top:89.5%!important;
+}
+
+/* FX STATION: the channel strip is FILTER-only. */
+#crt-screen-root .cc3-screen .d8m4-zone-main [data-dev-key="ch1"],
+#crt-screen-root .cc3-screen .d8m4-zone-main [data-dev-key="ch2"],
+#crt-screen-root .cc3-screen .d8m4-zone-main [data-dev-key="ch3"],
+#crt-screen-root .cc3-screen .d8m4-zone-main [data-dev-key="ch4"]{
+  top:72%!important;
+  height:15%!important;
+}
+#crt-screen-root .cc3-screen .cc3-channel{
+  padding:4px 9px!important;
+}
+#crt-screen-root .cc3-screen .cc3-channel-title{
+  height:18px!important;
+  line-height:18px!important;
+  font-size:15px!important;
+  margin-bottom:1px!important;
+}
+#crt-screen-root .cc3-screen .cc3-filter-only{
+  margin:0!important;
+}
+#crt-screen-root .cc3-screen .cc3-page-nav-bottom{
+  top:90%!important;
+}

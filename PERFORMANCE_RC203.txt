@@ -1,0 +1,7 @@
+D8M4 RC203 PERFORMANCE
+- BYD removes channel FILTER controls and the duplicate EFFECTS/INTENSITY panel.
+- FX STATION channel strip now contains FILTER only; PAN/MUTE/SOLO removed there.
+- Automation / Special Event / FX Scope visual state updates throttled to ~10 Hz while audio remains continuous.
+- Continuous manual control visual renders throttled to ~30 Hz; native slider motion/audio remain immediate.
+- Android long-press text selection/context callouts disabled over interactive CRT controls.
+- Profiler label updated to RC203.

@@ -111,6 +111,10 @@ export class CRTSystem {
   bind() {
     if (this.bound) return;
     this.bound = true;
+    this.root.addEventListener('contextmenu', (e) => {
+      if (e.target.closest?.('button,input,[data-menu-item],.cc2-radar,[data-fxmod-pad]')) e.preventDefault();
+    }, true);
+
     this.root.addEventListener('pointerdown', (e) => {
       if (e.target instanceof HTMLInputElement && e.target.type === 'range') {
         clearTimeout(this.interactionReleaseTimer);
@@ -400,8 +404,7 @@ export class CRTSystem {
       state.tracks.forEach((track, i) => {
         for (const [kind, param, scale] of [
           ['track-volume','volume',100],
-          ['track-pan','pan',100],
-          ['track-filter','filter',100]
+          ['track-pan','pan',100]
         ]) {
           setRange(`input[data-kind="${kind}"][data-index="${i}"]`, Math.round(track[param]*scale));
         }
@@ -415,19 +418,9 @@ export class CRTSystem {
         toggle(`[data-action="mute"][data-index="${i}"]`, track.mute);
         toggle(`[data-action="solo"][data-index="${i}"]`, track.solo);
       });
-      for (const name of ['tremolo','delay','reverb','width']) {
-        setRange(`input[data-kind="effect-level"][data-name="${name}"]`, Math.round(state.effects[name].level*100));
-      }
       for (const name of ['age','hiss','wowFlutter']) {
         setRange(`input[data-kind="character"][data-name="${name}"]`, Math.round(state.character[name]*100));
       }
-      this.root.querySelectorAll('[data-action="effect"]').forEach(el => {
-        const enabled=Boolean(state.effects[el.dataset.name]?.enabled);
-        el.classList.toggle('active',enabled);
-        el.setAttribute('aria-pressed',enabled?'true':'false');
-        const slider=this.root.querySelector(`input[data-kind="effect-level"][data-name="${el.dataset.name}"]`);
-        slider?.classList.toggle('fx-off',!enabled);
-      });
       this.root.querySelectorAll('[data-action="frs"]').forEach(el =>
         el.classList.toggle('active', el.dataset.mode === state.frs));
       this.root.querySelectorAll('[data-action="tape"]').forEach(el =>
@@ -437,17 +430,7 @@ export class CRTSystem {
 
     if (screen === 'control-centre') {
       state.tracks.forEach((track, i) => {
-        for (const [kind, param, scale] of [
-          ['track-volume','volume',100],
-          ['track-pan','pan',100],
-          ['track-filter','filter',100]
-        ]) {
-          setRange(`input[data-kind="${kind}"][data-index="${i}"]`, Math.round(track[param]*scale));
-        }
-        this.cached(`[data-action="xfade"][data-index="${i}"]`,true).forEach(el =>
-          el.classList.toggle('active', Number(el.dataset.choice) === track.xfade));
-        toggle(`[data-action="mute"][data-index="${i}"]`, track.mute);
-        toggle(`[data-action="solo"][data-index="${i}"]`, track.solo);
+        setRange(`input[data-kind="track-filter"][data-index="${i}"]`, Math.round(track.filter*100));
       });
 
       for (const name of ['tremolo','delay','reverb','width']) {
@@ -918,24 +901,21 @@ Choose your destination:  "><div class="spectrum-typed-line"><span class="typed-
     const channels=state.tracks.map((t,i)=>`<section data-dev-layer="live" data-dev-key="ch${i+1}" class="byd2-channel byd2-${channelColors[i]}">
       <div class="byd2-channel-title">CH${i+1}</div>
       ${[
-        ['LOOP VOL','track-volume','volume',0,100,Math.round(t.volume*100),Math.round(t.volume*100)],
-        ['PAN','track-pan','pan',-100,100,Math.round(t.pan*100),Math.round(t.pan*100)],
-        ['FILTER','track-filter','filter',-100,100,Math.round(t.filter*100),Math.round(t.filter*100)]
-      ].map(([label,kind,param,min,max,val,txt])=>`<div class="byd2-param"><div class="byd2-param-head"><span>${label}</span></div><div class="byd2-slider-wrap"><i class="byd2-mid" aria-hidden="true"></i><input class="byd2-slider" data-kind="${kind}" data-reset="track" data-param="${param}" data-index="${i}" type="range" min="${min}" max="${max}" value="${val}"></div></div>`).join('')}
+        ['LOOP VOL','track-volume','volume',0,100,Math.round(t.volume*100)],
+        ['PAN','track-pan','pan',-100,100,Math.round(t.pan*100)]
+      ].map(([label,kind,param,min,max,val])=>`<div class="byd2-param"><div class="byd2-param-head"><span>${label}</span></div><div class="byd2-slider-wrap"><i class="byd2-mid" aria-hidden="true"></i><input class="byd2-slider" data-kind="${kind}" data-reset="track" data-param="${param}" data-index="${i}" type="range" min="${min}" max="${max}" value="${val}"></div></div>`).join('')}
       <div class="byd2-ms"><button data-action="mute" data-index="${i}" data-menu-item class="byd2-button ${t.mute?'active':''}">MUTE</button><button data-action="solo" data-index="${i}" data-menu-item class="byd2-button ${t.solo?'active':''}">SOLO</button></div>
       <div class="byd2-xf-title">X-FADE</div>
       <div class="byd2-xf">${[1,2,3].map(c=>`<button data-action="xfade" data-index="${i}" data-choice="${c}" data-menu-item class="byd2-button byd2-xf-button ${t.xfade===c?'active':''}">${c}</button>`).join('')}</div>
       <div class="byd2-frequency"><button data-action="frequency-mode" data-index="${i}" data-menu-item class="byd2-button byd2-frequency-mode" aria-label="Loop, Frequency or Dropout mode"><span data-frequency-mode data-index="${i}">${t.frequencyMode==='loop'?'LOOP':t.frequencyMode==='dropout'?'DROPOUT':'FREQUENCY'}</span></button><div class="byd2-frequency-controls"><button data-action="frequency" data-index="${i}" data-menu-item class="byd2-button byd2-frequency-value" aria-label="Frequency or Dropout count"><b data-frequency-value data-index="${i}">${t.frequency??1}</b></button><button data-action="frequency-random" data-index="${i}" data-menu-item class="byd2-button byd2-frequency-random ${t.frequencyRandom?'active':''}" aria-pressed="${t.frequencyRandom?'true':'false'}">RND</button></div></div>
     </section>`).join('');
 
-    const effects=['tremolo','delay','reverb','width'].map(name=>`<div class="byd2-global-row byd2-fx-${name}"><button data-action="effect" data-name="${name}" data-menu-item aria-pressed="${state.effects[name].enabled?'true':'false'}" class="byd2-label-toggle ${state.effects[name].enabled?'active':''}">${name==='tremolo'?'TREM':name.toUpperCase()}</button><input class="${state.effects[name].enabled?'':'fx-off'}" data-kind="effect-level" data-reset="effect" data-name="${name}" type="range" min="0" max="100" value="${Math.round(state.effects[name].level*100)}"></div>`).join('');
     const chars=[['age','AGE'],['hiss','HISS'],['wowFlutter','W & F']].map(([name,label])=>`<div class="byd2-global-row byd2-char-row"><span>${label}</span><input data-kind="character" data-reset="character" data-name="${name}" type="range" min="0" max="100" value="${Math.round(state.character[name]*100)}"></div>`).join('');
 
     this.root.innerHTML=`<div class="crt-screen byd-screen byd2-screen" data-dev-page="byd">
       <header data-dev-layer="design" data-dev-key="header" class="d8m4-zone-header" aria-label="Empty header placeholder"></header>
       <main class="d8m4-zone-main byd2-main">
         <div class="byd2-channel-row">${channels}</div>
-        <section data-dev-layer="live" data-dev-key="effects" class="byd2-panel byd2-effects"><div class="byd2-panel-title">EFFECTS</div>${effects}<div class="byd2-intensity"><div class="byd2-intensity-head"><span>INTENSITY</span></div><input data-kind="intensity" type="range" min="-50" max="50" value="${Math.round(state.intensity*50)}"></div></section>
         <section data-dev-layer="live" data-dev-key="character" class="byd2-panel byd2-character"><div class="byd2-panel-title">CHARACTER</div>${chars}<div class="byd2-tape"><span>TAPE TYPE</span><button data-action="tape" data-type="normal" data-menu-item class="byd2-button ${state.tapeType==='normal'?'active':''}">NORMAL</button><button data-action="tape" data-type="chrome" data-menu-item class="byd2-button ${state.tapeType==='chrome'?'active':''}">CHROME</button><button data-action="tape" data-type="metal" data-menu-item class="byd2-button ${state.tapeType==='metal'?'active':''}">METAL</button></div></section>
         <div class="byd2-page-nav byd2-page-nav-bottom"><button data-menu-item data-action="secondary-screen" data-screen="control-centre">FX STATION</button><button data-menu-item data-action="close-secondary">CLOSE</button></div>
       </main>
@@ -948,11 +928,7 @@ Choose your destination:  "><div class="spectrum-typed-line"><span class="typed-
     const enabledParams=state.fxMod.params||{pan:true,reverb:true,width:true,tremolo:true,delay:true,filter:true};
     const channels=state.tracks.map((t,i)=>`<section data-dev-layer="live" data-dev-key="ch${i+1}" class="cc3-channel cc3-${channelColors[i]}">
       <div class="cc3-channel-title">CH${i+1}</div>
-      ${[
-        ['PAN','track-pan','pan',-100,100,Math.round(t.pan*100),Math.round(t.pan*100)],
-        ['FILTER','track-filter','filter',-100,100,Math.round(t.filter*100),Math.round(t.filter*100)]
-      ].map(([label,kind,param,min,max,val,txt])=>`<div class="cc3-param"><div class="cc3-param-head"><span>${label}</span></div><div class="cc3-slider-wrap"><i class="cc3-mid" aria-hidden="true"></i><input class="cc3-slider" data-kind="${kind}" data-reset="track" data-param="${param}" data-index="${i}" type="range" min="${min}" max="${max}" value="${val}"></div></div>`).join('')}
-      <div class="cc3-ms"><button data-action="mute" data-index="${i}" data-menu-item class="cc3-button ${t.mute?'active':''}">MUTE</button><button data-action="solo" data-index="${i}" data-menu-item class="cc3-button ${t.solo?'active':''}">SOLO</button></div>
+      <div class="cc3-param cc3-filter-only"><div class="cc3-param-head"><span>FILTER</span></div><div class="cc3-slider-wrap"><i class="cc3-mid" aria-hidden="true"></i><input class="cc3-slider" data-kind="track-filter" data-reset="track" data-param="filter" data-index="${i}" type="range" min="-100" max="100" value="${Math.round(t.filter*100)}"></div></div>
     </section>`).join('');
     const fx=['tremolo','delay','reverb','width'].map(name=>`<div class="cc3-effect-card cc3-fx-${name}"><div class="cc3-effect-top"><button data-action="effect" data-name="${name}" data-menu-item aria-pressed="${state.effects[name].enabled?'true':'false'}" class="cc3-label-toggle ${state.effects[name].enabled?'active':''}">${name==='tremolo'?'TREMOLO':name.toUpperCase()}</button></div><div class="cc3-effect-sliderline"><input class="${state.effects[name].enabled?'':'fx-off'}" data-kind="effect-level" data-reset="effect" data-name="${name}" type="range" min="0" max="100" value="${Math.round(state.effects[name].level*100)}"></div></div>`).join('');
 

@@ -12,6 +12,8 @@ export class MachineView {
     this.crt = new CRTSystem({ store, controller, root: document.querySelector('#crt-screen-root') });
     this.#bind();
     this.renderFrame = null;
+    this.renderTimer = null;
+    this.lastVisualRenderAt = 0;
     this.pendingRenderState = null;
     this.pendingRenderMeta = null;
     this.unsubscribe = store.subscribe((state, meta) => {
@@ -25,15 +27,25 @@ export class MachineView {
   #scheduleRender(state, meta) {
     this.pendingRenderState = state;
     this.pendingRenderMeta = meta;
-    if (this.renderFrame) return;
-    this.renderFrame = requestAnimationFrame(() => {
-      this.renderFrame = null;
-      const nextState = this.pendingRenderState;
-      const nextMeta = this.pendingRenderMeta;
-      this.pendingRenderState = null;
-      this.pendingRenderMeta = null;
-      if (nextState) this.render(nextState, nextMeta || { revision: this.store.revision });
-    });
+    const reason=String(meta?.reason||'');
+    const automationVisual=/^(automix-|special-event-|fxmod-frame)/.test(reason);
+    const liveControl=/^(track-(volume|pan|filter)|effect-|character-|intensity)/.test(reason);
+    const minGap=automationVisual?100:(liveControl?33:0);
+    const elapsed=performance.now()-this.lastVisualRenderAt;
+    const run=()=>{
+      this.renderFrame=null;
+      if(this.renderTimer){clearTimeout(this.renderTimer);this.renderTimer=null;}
+      const nextState=this.pendingRenderState;
+      const nextMeta=this.pendingRenderMeta;
+      this.pendingRenderState=null;this.pendingRenderMeta=null;
+      if(nextState){this.lastVisualRenderAt=performance.now();this.render(nextState,nextMeta||{revision:this.store.revision});}
+    };
+    if(minGap>0 && elapsed<minGap){
+      if(!this.renderTimer) this.renderTimer=setTimeout(run,Math.max(0,minGap-elapsed));
+      return;
+    }
+    if(this.renderFrame||this.renderTimer)return;
+    this.renderFrame=requestAnimationFrame(run);
   }
 
   #buildSmallLevels() {

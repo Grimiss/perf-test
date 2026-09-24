@@ -24,7 +24,7 @@ export function startPerfProbe({getScreen=()=>''}={}){
       frames=0; last=now;
       const avg=samples.reduce((a,b)=>a+b,0)/samples.length;
       const heap=performance.memory?`${Math.round(performance.memory.usedJSHeapSize/1048576)} MB`:'n/a';
-      panel.textContent=`D8M4 PERF RC201\nFPS ${fps.toFixed(0)}  AVG ${avg.toFixed(0)}\nLONG ${longTasks}  ${Math.round(longMs)}ms  MAX ${Math.round(maxLong)}ms\nHEAP ${heap}\nSCREEN ${getScreen()}`;
+      panel.textContent=`D8M4 PERF RC203\nFPS ${fps.toFixed(0)}  AVG ${avg.toFixed(0)}\nLONG ${longTasks}  ${Math.round(longMs)}ms  MAX ${Math.round(maxLong)}ms\nHEAP ${heap}\nSCREEN ${getScreen()}`;
     }
     raf=requestAnimationFrame(tick);
   };
