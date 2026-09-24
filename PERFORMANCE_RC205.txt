@@ -1,0 +1,11 @@
+D8M4 RC205 PERFORMANCE
+
+Purpose: refine RC204 visual smoothness without giving back the tablet stability gains.
+
+Changes from RC204:
+- FX Scope / Special Event state/UI snapshots increased from 5 Hz to 8 Hz.
+- FX Scope sweep / ship visual refresh increased from 10 Hz to about 15 Hz.
+- Manual BYD volume control throttle remains about 15 Hz.
+- Audio processing remains immediate/continuous.
+- All RC204 simplifications, Scope ownership rules, and hidden-page suspension are retained.
+- Visible build label and profiler updated to RC205.

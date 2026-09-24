@@ -558,8 +558,8 @@ export class AppController {
 
   #queueFxModFlush() {
     if (this.fxModFrameRequest !== null) return;
-    // RC204: audio is still applied immediately, but FX Scope state/UI snapshots
-    // are deliberately limited to 5 Hz to keep tablet rendering rock solid.
+    // RC205: audio is still applied immediately, while FX Scope state/UI snapshots
+    // are limited to 8 Hz: smoother than RC204 while retaining the tablet performance margin.
     this.fxModFrameRequest = setTimeout(() => {
       this.fxModFrameRequest = null;
       const tracks = new Map(this.fxModPendingTracks);
@@ -601,7 +601,7 @@ export class AppController {
       },{reason:'fxmod-frame'});
 
       if (patch && (patch.memoryX !== undefined || patch.memoryY !== undefined || patch.trajectory !== undefined || patch.releaseVelocity !== undefined || patch.timeMode || patch.probMode)) this.#persistFxScopePreset();
-    }, 200);
+    }, 125);
   }
 
   #applyFxModValue(id, value) {

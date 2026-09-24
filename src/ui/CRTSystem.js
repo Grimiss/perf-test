@@ -75,7 +75,7 @@ export class CRTSystem {
         return;
       }
       const nowMs=performance.now();
-      if(nowMs-this.scopeLastFrameMs<100){ this.scopeSweepFrame=window.requestAnimationFrame(tick); return; }
+      if(nowMs-this.scopeLastFrameMs<67){ this.scopeSweepFrame=window.requestAnimationFrame(tick); return; }
       this.scopeLastFrameMs=nowMs;
       const state = this.store.getState();
       const sweep = this.cached('.cc2-radar-sweep');
