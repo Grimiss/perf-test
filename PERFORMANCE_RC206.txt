@@ -1,0 +1,6 @@
+D8M4 RC206 PERFORMANCE
+
+- Fixed FX Scope INTENSITY parameter toggle: INTENSITY can now be deselected/reselected like the other scope parameters.
+- Removed stale PAN entry from FX Scope parameter allow-list.
+- Moved the RC206 build label down onto the cream fascia below the main CRT for clear visibility.
+- RC205 performance refresh rates and all other functionality retained.

@@ -5857,11 +5857,11 @@ body.welcome-live-edit .welcome-path-stack .welcome-path-button{
 }
 
 
-/* RC205 PERFORMANCE — RC204 stability pass retained; FX motion refresh refined. */
+/* RC206 PERFORMANCE — RC205 motion tuning retained; version label moved onto cream fascia. */
 .build-version-label{
-  position:absolute;left:5.99%;top:75.15%;width:49.61%;height:24px;
+  position:absolute;left:5.99%;top:78.65%;width:49.61%;height:20px;
   z-index:12;display:flex;align-items:center;justify-content:center;
-  color:#000!important;font:900 18px/1 Arial,sans-serif!important;letter-spacing:1px;
+  color:#000!important;font:900 16px/1 Arial,sans-serif!important;letter-spacing:1px;
   text-shadow:none!important;pointer-events:none;user-select:none;
 }
 /* Scope channel dots removed in RC204: the ship + live page controls provide feedback. */

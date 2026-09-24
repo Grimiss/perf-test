@@ -365,7 +365,7 @@ export class AppController {
     this.#persistFxScopePreset();
   }
   toggleFxModParam(param){
-    const allowed=["pan","reverb","width","tremolo","delay","filter"]; if(!allowed.includes(param))return;
+    const allowed=["intensity","reverb","width","tremolo","delay","filter"]; if(!allowed.includes(param))return;
     this.store.update(d=>{d.fxMod.params=d.fxMod.params||{};d.fxMod.params[param]=d.fxMod.params[param]===false;},{reason:`fxmod-param-${param}`});
     this.fxMod.onParamsChanged?.();
   }
