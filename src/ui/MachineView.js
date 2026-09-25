@@ -1,4 +1,5 @@
 import { CRTSystem } from "./CRTSystem.js";
+import { getPerformanceMode, getPerformanceProfile, togglePerformanceMode } from "../perf/PerformanceProfile.js";
 export class MachineView {
   constructor({ store, controller }) {
     this.store = store;
@@ -30,7 +31,8 @@ export class MachineView {
     const reason=String(meta?.reason||'');
     const automationVisual=/^(automix-|special-event-|fxmod-frame)/.test(reason);
     const liveControl=/^(track-(volume|pan|filter)|effect-|character-|intensity)/.test(reason);
-    const minGap=automationVisual?200:(liveControl?67:0);
+    const perf=getPerformanceProfile();
+    const minGap=automationVisual?perf.automationVisualMs:(liveControl?perf.liveControlMs:0);
     const elapsed=performance.now()-this.lastVisualRenderAt;
     const run=()=>{
       this.renderFrame=null;
@@ -116,6 +118,18 @@ export class MachineView {
     document.querySelector('#small-ramp').addEventListener('click', () => this.controller.toggleRamp());
     document.querySelector('#automix-force').addEventListener('click', () => this.controller.forceAutoMixEvent());
     document.querySelector('#special-event-force').addEventListener('click', () => this.controller.triggerSpecialEvent());
+
+    this.performanceModeButton=document.querySelector('#performance-mode-button');
+    const syncPerformanceButton=()=>{
+      if(!this.performanceModeButton)return;
+      const mode=getPerformanceMode();
+      this.performanceModeButton.textContent=`PERF: ${mode.toUpperCase()}`;
+      this.performanceModeButton.setAttribute('aria-pressed',String(mode==='smooth'));
+      this.performanceModeButton.dataset.mode=mode;
+    };
+    syncPerformanceButton();
+    this.performanceModeButton?.addEventListener('click',()=>{togglePerformanceMode();syncPerformanceButton();});
+    window.addEventListener('d8m4-performance-mode',syncPerformanceButton);
 
     const bindGameDirection = (selector, key) => {
       const btn=document.querySelector(selector);

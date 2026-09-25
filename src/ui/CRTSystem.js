@@ -1,4 +1,5 @@
 import { GameRuntime } from "./GameRuntime.js";
+import { getPerformanceProfile } from "../perf/PerformanceProfile.js";
 
 export class CRTSystem {
   constructor({ store, controller, root }) {
@@ -75,7 +76,7 @@ export class CRTSystem {
         return;
       }
       const nowMs=performance.now();
-      if(nowMs-this.scopeLastFrameMs<67){ this.scopeSweepFrame=window.requestAnimationFrame(tick); return; }
+      if(nowMs-this.scopeLastFrameMs<getPerformanceProfile().scopeFrameMs){ this.scopeSweepFrame=window.requestAnimationFrame(tick); return; }
       this.scopeLastFrameMs=nowMs;
       const state = this.store.getState();
       const sweep = this.cached('.cc2-radar-sweep');
@@ -154,7 +155,7 @@ export class CRTSystem {
       const commit=(value,force=false)=>{
         pendingValue=value;
         const now=performance.now();
-        const wait=Math.max(0,67-(now-lastCommit));
+        const wait=Math.max(0,getPerformanceProfile().volumeCommitMs-(now-lastCommit));
         if(force || wait<=0){
           if(commitTimer){clearTimeout(commitTimer);commitTimer=null;}
           lastCommit=now; const next=pendingValue; pendingValue=null;

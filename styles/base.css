@@ -5874,3 +5874,31 @@ body.welcome-live-edit .welcome-path-stack .welcome-path-button{
 }
 #crt-screen-root .cc3-screen .cc2-radar-sweep{box-shadow:none!important;}
 #crt-screen-root .cc3-screen .cc2-fxmod-nav{box-shadow:none!important;}
+
+/* RC207 PERFORMANCE — per-device SAFE / SMOOTH visual refresh profile. */
+.build-version-label{
+  left:5.99%!important;
+  width:36.4%!important;
+}
+.performance-mode-button{
+  position:absolute;
+  left:43.1%;
+  top:78.42%;
+  width:12.2%;
+  height:29px;
+  z-index:120;
+  border:2px solid #16130f;
+  border-radius:4px;
+  background:#e6dcc4;
+  color:#111;
+  font:900 13px/1 Arial,sans-serif;
+  letter-spacing:.65px;
+  text-align:center;
+  box-shadow:inset 0 1px rgba(255,255,255,.55),0 1px 1px rgba(0,0,0,.2);
+  cursor:pointer;
+  -webkit-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+.performance-mode-button:active{transform:translateY(1px);}
+.performance-mode-button[data-mode="smooth"]{background:#f4eedf;}

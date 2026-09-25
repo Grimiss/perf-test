@@ -1,0 +1,8 @@
+D8M4 RC207 PERFORMANCE
+
+- Adds a per-browser SAFE / SMOOTH performance mode toggle on the cream fascia below the main CRT.
+- SAFE is the default and preserves RC206 tablet-friendly visual refresh rates.
+- SMOOTH raises UI refresh rates for faster computers while leaving audio processing unchanged.
+- Selection is stored in browser localStorage so each device/browser remembers its own choice.
+- RC207 build label remains visible on the cream fascia.
+- DEV windows remain disabled/not instantiated in this performance build.

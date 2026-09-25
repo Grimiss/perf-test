@@ -2,6 +2,7 @@ import { OperationGate } from "./OperationGate.js";
 import { AutomationManager } from "../automation/AutomationManager.js";
 import { SpecialEventManager } from "../automation/SpecialEventManager.js";
 import { FxModManager } from "../automation/FxModManager.js";
+import { getPerformanceProfile } from '../perf/PerformanceProfile.js';
 
 export class AppController {
   constructor({ store, audioEngine, repository, soundscape }) {
@@ -558,8 +559,8 @@ export class AppController {
 
   #queueFxModFlush() {
     if (this.fxModFrameRequest !== null) return;
-    // RC205: audio is still applied immediately, while FX Scope state/UI snapshots
-    // are limited to 8 Hz: smoother than RC204 while retaining the tablet performance margin.
+    // RC207: audio is still applied immediately. SAFE/SMOOTH only changes
+    // how frequently FX Scope state/UI snapshots are published.
     this.fxModFrameRequest = setTimeout(() => {
       this.fxModFrameRequest = null;
       const tracks = new Map(this.fxModPendingTracks);
@@ -601,7 +602,7 @@ export class AppController {
       },{reason:'fxmod-frame'});
 
       if (patch && (patch.memoryX !== undefined || patch.memoryY !== undefined || patch.trajectory !== undefined || patch.releaseVelocity !== undefined || patch.timeMode || patch.probMode)) this.#persistFxScopePreset();
-    }, 125);
+    }, getPerformanceProfile().fxModFlushMs);
   }
 
   #applyFxModValue(id, value) {
