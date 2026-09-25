@@ -1,0 +1,1 @@
+RC218: TV video enlarged to fill full CRT display area. Removed WELCOME/GAME footer buttons from TV mode. No other behavior changed.

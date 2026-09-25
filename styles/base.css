@@ -6172,3 +6172,25 @@ body.welcome-live-edit .welcome-path-stack .welcome-path-button{
 
 /* RC217 — TV video load error fallback. */
 #crt-screen-root .tv-video-error{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:4;font-family:"ZX Spectrum",monospace;font-size:18px;color:#ff4c4c;letter-spacing:2px}
+
+
+/* RC218 — TV visual fills the full usable CRT area; TV footer buttons removed in markup. */
+#crt-screen-root .crt-screen.tv-video-screen{
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  padding:0!important;
+  margin:0!important;
+  background:#000!important;
+  overflow:hidden!important;
+  box-sizing:border-box!important;
+}
+#crt-screen-root .tv-soundscape-video{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center center!important;
+  display:block!important;
+}
