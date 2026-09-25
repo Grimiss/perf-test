@@ -1,0 +1,7 @@
+D8M4 RC214
+- Adds Time Becomes Time TV visual for SS01.
+- TV visual loops continuously while SS01 transport is PLAYING in TV Mode.
+- PAUSE and STOP pause the video at its current position; PLAY resumes it.
+- Entering TV Mode while SS01 is already playing starts the TV video automatically.
+- Leaving TV Mode pauses the video to avoid unnecessary background work.
+- Video is muted; D8M4 soundscape audio remains the audio source.

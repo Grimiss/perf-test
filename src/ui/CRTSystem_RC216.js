@@ -1117,10 +1117,13 @@ Choose your destination:  "><div class="spectrum-typed-line"><span class="typed-
   }
 
   tvAssetForSoundscape(id) {
-    const assets = {
-      SS01: 'assets/video/tv/D8M4_SS01_TV.mp4'
-    };
-    return assets[id] || null;
+    // RC216: normalise the soundscape identifier so TV1 does not depend on
+    // an exact cached/string representation such as SS01 vs SS1 vs 1.
+    const raw=String(id ?? '').trim().toUpperCase();
+    const match=raw.match(/(\d+)/);
+    const slot=match ? Number(match[1]) : NaN;
+    if(slot===1) return 'assets/video/tv/D8M4_SS01_TV.mp4?v=rc216';
+    return null;
   }
 
   syncTVVideo(state) {
@@ -1151,7 +1154,7 @@ Choose your destination:  "><div class="spectrum-typed-line"><span class="typed-
       }
       return;
     }
-    const filename=`D8M4_${state.soundscape.id}_TV.mp4`;
+    const filename=`D8M4_${String(state.soundscape.id||'SS').toUpperCase()}_TV.mp4`;
     this.root.innerHTML=`<div class="crt-screen missing-screen" data-tv-ss-id="${state.soundscape.id}"><div class="missing-big">MISSING ASSET</div><div class="missing-file">${filename}</div><div class="missing-note">TV MODE · ${state.frs.toUpperCase()} ${state.frs==='focus'?'100':state.frs==='relax'?'75':'50'}%</div>${this.baseFooter('tv')}</div>`;
   }
 

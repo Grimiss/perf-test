@@ -1,4 +1,4 @@
-import { LoopCrossfade } from "./LoopCrossfade.js";
+import { LoopCrossfade } from "./LoopCrossfade.js?v=rc215";
 
 const FREQUENCY_FADE_MULTIPLIER = 10;
 

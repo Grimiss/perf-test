@@ -1,6 +1,6 @@
-import { TransportClock } from "./TransportClock.js";
-import { TrackPlayer } from "./TrackPlayer.js";
-import { ProcessingChain } from "./ProcessingChain.js";
+import { TransportClock } from "./TransportClock.js?v=rc215";
+import { TrackPlayer } from "./TrackPlayer.js?v=rc215";
+import { ProcessingChain } from "./ProcessingChain.js?v=rc215";
 
 class SoundscapeBank {
   constructor({ context, clock, destination, bankId, playbackModulations, onEvent }) {

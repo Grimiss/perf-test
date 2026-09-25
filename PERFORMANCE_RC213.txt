@@ -1,0 +1,6 @@
+D8M4 RC213
+
+- Removed the visible RC build number from the machine fascia.
+- Moved the SAFE / SMOOTH performance selector into the FX Station AUTO FX panel.
+- Performance mode remains stored per browser/device using the existing localStorage profile.
+- No audio, Auto Mix, Auto FX, Special Event, or layout behavior changed otherwise.

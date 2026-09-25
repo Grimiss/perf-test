@@ -1,10 +1,10 @@
-import { StateStore } from './core/StateStore.js?v=rc215';
-import { createInitialState } from './core/defaults.js?v=rc215';
-import { AppController } from './core/AppController.js?v=rc215';
-import { AudioEngine } from './audio/AudioEngine.js?v=rc215';
-import { SoundscapeRepository } from './soundscapes/SoundscapeRepository.js?v=rc215';
-import { MachineView } from './ui/MachineView.js?v=rc215';
-import { startPerfProbe } from './perf/PerfProbe.js?v=rc215';
+import { StateStore } from './core/StateStore.js?v=rc216';
+import { createInitialState } from './core/defaults.js?v=rc216';
+import { AppController } from './core/AppController.js?v=rc216';
+import { AudioEngine } from './audio/AudioEngine.js?v=rc216';
+import { SoundscapeRepository } from './soundscapes/SoundscapeRepository.js?v=rc216';
+import { MachineView } from './ui/MachineView_RC217.js';
+import { startPerfProbe } from './perf/PerfProbe.js?v=rc216';
 
 async function boot(){
   try{

@@ -1,0 +1,6 @@
+D8M4 RC216
+
+- Fixes SS1 TV video loading with unique RC216 module filenames so GitHub/browser caches cannot reuse the old TV renderer.
+- TV soundscape ID matching is normalised (SS01 / SS1 / 1 all resolve to slot 1).
+- SS1 TV video URL is cache-busted directly.
+- No other behaviour changed.
