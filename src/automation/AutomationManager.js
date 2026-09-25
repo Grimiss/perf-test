@@ -21,6 +21,12 @@ export class AutomationManager {
     this.gameColorCompletionTimers = new Map();
     this.gameColorCompletionIds = new Map();
     this.active = false;
+    // RC219: long-form evolution targets. Auto Mix now moves toward slowly
+    // changing musical states instead of constantly correcting back to the
+    // original preset. The preset is only revisited softly every ~15–20 min.
+    this.evolutionTargets = new Map();
+    this.evolutionPhaseTimer = null;
+    this.nextHomeVisitAt = 0;
     this.resetBaselines();
   }
 
@@ -40,8 +46,10 @@ export class AutomationManager {
 
   resetBaselines() {
     this.baselines.clear();
+    this.evolutionTargets.clear();
     const state = this.store.getState();
     for (const def of this.definitions) this.baselines.set(def.id, this.#read(def, state));
+    this.nextHomeVisitAt = performance.now() + random(15 * 60 * 1000, 20 * 60 * 1000);
   }
 
   onTransport(status) {
@@ -68,6 +76,9 @@ export class AutomationManager {
 
   manualIntervention(id, value) {
     this.baselines.set(id, Number(value));
+    // Respect a manual move for the rest of the current evolutionary phase.
+    // A later phase is free to drift away again.
+    this.evolutionTargets.set(id, Number(value));
     this.#cancelMove(id);
     // A manual grab becomes the new base. If that parameter was moving,
     // give it a full normal wait before Auto Mix is allowed to touch it again.
@@ -95,6 +106,7 @@ export class AutomationManager {
     if (this.active) return;
     this.active = true;
     this.onStatus({ active: true });
+    this.#beginEvolutionPhase(true);
     for (const def of this.autoDefinitions) this.#schedule(def.id, true);
   }
 
@@ -104,6 +116,8 @@ export class AutomationManager {
       return;
     }
     this.active = false;
+    if (this.evolutionPhaseTimer) clearTimeout(this.evolutionPhaseTimer);
+    this.evolutionPhaseTimer = null;
     for (const timer of this.scheduleTimers.values()) clearTimeout(timer);
     for (const timer of this.moveTimers.values()) clearInterval(timer);
     this.scheduleTimers.clear();
@@ -199,6 +213,135 @@ export class AutomationManager {
     return true;
   }
 
+  #beginEvolutionPhase(immediate = false) {
+    if (!this.active) return;
+    if (this.evolutionPhaseTimer) clearTimeout(this.evolutionPhaseTimer);
+
+    const now = performance.now();
+    const homeVisit = this.nextHomeVisitAt > 0 && now >= this.nextHomeVisitAt;
+    this.#buildEvolutionTargets(homeVisit);
+    if (homeVisit) this.nextHomeVisitAt = now + random(15 * 60 * 1000, 20 * 60 * 1000);
+
+    const state = this.store.getState();
+    const phaseRange = state.frs === "sleep" ? [105000, 190000] : state.frs === "relax" ? [80000, 155000] : [60000, 125000];
+    const delay = immediate ? random(65000, 105000) : random(...phaseRange);
+    this.evolutionPhaseTimer = setTimeout(() => {
+      this.evolutionPhaseTimer = null;
+      if (this.active) this.#beginEvolutionPhase(false);
+    }, delay);
+  }
+
+  #buildEvolutionTargets(homeVisit = false) {
+    const state = this.store.getState();
+    const channelMode = String(state.autoMix?.channelLevel || "MED").toUpperCase();
+    const characterMode = String(state.autoMix?.characterLevel || "MED").toUpperCase();
+    const channelScale = channelMode === "LOW" ? 0.58 : channelMode === "HIGH" ? 1.22 : 0.90;
+    const characterScale = characterMode === "LOW" ? 0.55 : characterMode === "HIGH" ? 1.25 : 0.88;
+    const scaleToward = (current, target, scale, min = 0, max = 1) => clamp(current + (target - current) * scale, min, max);
+    const shuffled = (items) => {
+      const out = [...items];
+      for (let i = out.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [out[i], out[j]] = [out[j], out[i]];
+      }
+      return out;
+    };
+
+    if (homeVisit) {
+      // A soft fly-by of the original preset, never an exact reset.
+      for (const def of this.autoDefinitions) {
+        const current = this.#read(def, state);
+        const base = this.baselines.has(def.id) ? this.baselines.get(def.id) : current;
+        const spread = def.type === "pan" ? 0.14 : def.type === "character" ? 0.08 : 0.07;
+        const min = def.type === "pan" ? -1 : 0;
+        const max = 1;
+        this.evolutionTargets.set(def.id, clamp(base + random(-spread, spread), min, max));
+      }
+      return;
+    }
+
+    const currentVolumes = state.tracks.map((t) => clamp01(t.volume));
+    const targets = [...currentVolumes];
+    const indices = shuffled([0, 1, 2, 3]);
+    const roll = Math.random();
+
+    const pushDown = (i, deep = false) => {
+      const cur = currentVolumes[i];
+      const raw = deep && Math.random() < 0.55 ? random(0.025, 0.14) : Math.max(0.025, cur - random(0.18, 0.48));
+      targets[i] = scaleToward(cur, raw, channelScale, 0.02, 0.98);
+    };
+    const pushUp = (i, strong = false) => {
+      const cur = currentVolumes[i];
+      const floor = strong ? 0.72 : 0.56;
+      const raw = random(Math.max(floor, cur + 0.10), 0.98);
+      targets[i] = scaleToward(cur, raw, channelScale, 0.02, 0.98);
+    };
+    const drift = (i, amount = 0.25) => {
+      const cur = currentVolumes[i];
+      targets[i] = clamp(cur + random(-amount, amount) * channelScale, 0.02, 0.98);
+    };
+
+    if (roll < 0.18) {
+      // Sparse: one or two tracks recede; compensation is optional.
+      const downCount = Math.random() < 0.58 ? 1 : 2;
+      indices.slice(0, downCount).forEach((i) => pushDown(i, true));
+      if (Math.random() < 0.52) pushUp(indices[downCount], Math.random() < 0.35);
+    } else if (roll < 0.34) {
+      // Intense: several tracks rise above their starting levels, with an
+      // occasional retreating track to stop the mix becoming a flat wall.
+      const upCount = 2 + Math.floor(Math.random() * 3);
+      indices.slice(0, upCount).forEach((i) => pushUp(i, true));
+      if (upCount < 4 && Math.random() < 0.55) pushDown(indices[upCount], false);
+    } else if (roll < 0.56) {
+      // Redistribution: energy moves from one side of the mix to another.
+      const downCount = Math.random() < 0.55 ? 1 : 2;
+      const upCount = Math.random() < 0.58 ? 1 : 2;
+      indices.slice(0, downCount).forEach((i) => pushDown(i, Math.random() < 0.35));
+      indices.slice(downCount, Math.min(4, downCount + upCount)).forEach((i) => pushUp(i, Math.random() < 0.35));
+    } else if (roll < 0.72) {
+      // Featured voice: one track becomes prominent while one/two become very
+      // quiet, exposing tape character and details in the source material.
+      pushUp(indices[0], true);
+      pushDown(indices[1], true);
+      if (Math.random() < 0.65) pushDown(indices[2], true);
+      if (Math.random() < 0.35) drift(indices[3], 0.18);
+    } else if (roll < 0.86) {
+      // Ebb: the whole drone breathes down, but by different amounts.
+      indices.forEach((i) => pushDown(i, Math.random() < 0.28));
+    } else {
+      // Free drift: no compensation rule at all.
+      indices.forEach((i) => drift(i, 0.34));
+    }
+
+    targets.forEach((value, i) => this.evolutionTargets.set(`track:${i}:volume`, value));
+
+    // Pan evolves independently from level, and deliberately does not snap to
+    // a common centre. Each long-form phase gets its own spatial balance.
+    for (let i = 0; i < 4; i += 1) {
+      const current = clampBi(state.tracks[i].pan);
+      let target = clampBi(current + random(-0.65, 0.65) * channelScale);
+      if (Math.random() < 0.14) target = random(-0.85, 0.85);
+      this.evolutionTargets.set(`track:${i}:pan`, target);
+    }
+
+    // Character has its own intensity setting. Sparse channel phases have a
+    // gentle tendency to reveal more AGE/HISS, but never as a fixed rule.
+    const meanVolume = targets.reduce((a, b) => a + b, 0) / targets.length;
+    for (const name of ["age", "hiss", "wowFlutter"]) {
+      const id = `character:${name}`;
+      const current = clamp01(state.character[name]);
+      let target;
+      if ((name === "age" || name === "hiss") && meanVolume < 0.42 && Math.random() < 0.58) {
+        target = random(Math.max(current, 0.30), 0.82);
+      } else if (Math.random() < 0.12) {
+        target = Math.random() < 0.5 ? random(0.03, 0.20) : random(0.62, 0.90);
+      } else {
+        target = current + random(-0.26, 0.26);
+      }
+      this.evolutionTargets.set(id, scaleToward(current, clamp01(target), characterScale, 0, 0.92));
+    }
+  }
+
   #schedule(id, replace = false) {
     if (!this.active) return;
     if (replace && this.scheduleTimers.has(id)) clearTimeout(this.scheduleTimers.get(id));
@@ -220,7 +363,7 @@ export class AutomationManager {
     const baseSpeed = state.frs === "sleep" ? 0.5 : state.frs === "relax" ? 0.75 : 1;
     const intensitySpeed = 1 + (clampBi(state.intensity) * 0.5);
     const frequency = Math.max(0.15, baseSpeed * intensitySpeed);
-    return random(9000, 18000) / frequency;
+    return random(16000, 32000) / frequency;
   }
 
   #eligible(def, state) {
@@ -240,55 +383,23 @@ export class AutomationManager {
   }
 
   #target(def, current) {
-    const baseline = this.baselines.has(def.id) ? this.baselines.get(def.id) : current;
     const state = this.store.getState();
     const mode = def.type === "character" ? state.autoMix?.characterLevel : state.autoMix?.channelLevel;
-    const amount = String(mode || "MED").toUpperCase() === "LOW" ? 0.55 : String(mode || "MED").toUpperCase() === "HIGH" ? 1.45 : 1;
-    if (def.type === "effect") {
-      const min = Math.max(0, baseline - 0.30);
-      const max = Math.min(1, baseline + 0.30);
-      let target = current + random(-0.08, 0.08);
-      if (target < min) target = min + (min - target);
-      if (target > max) target = max - (target - max);
-      return clamp(target, min, max);
+    const amount = String(mode || "MED").toUpperCase() === "LOW" ? 0.65 : String(mode || "MED").toUpperCase() === "HIGH" ? 1.08 : 0.88;
+
+    if (this.evolutionTargets.has(def.id)) {
+      const phaseTarget = this.evolutionTargets.get(def.id);
+      const min = def.type === "pan" ? -1 : 0;
+      const max = def.type === "character" ? 0.92 : 1;
+      return clamp(current + (phaseTarget - current) * amount, min, max);
     }
 
-    if (def.type === "volume") {
-      const distanceBelow = Math.max(0, baseline - current);
-      let target;
-      if (distanceBelow > 0.06) {
-        const recoveryChance = Math.min(0.90, 0.65 + distanceBelow * 1.5);
-        target = Math.random() < recoveryChance ? current + random(0.035, 0.085) : current - random(0.020, 0.050);
-      } else {
-        target = Math.random() < 0.58 ? current + random(0.025, 0.070) : current - random(0.025, 0.070);
-      }
-      return clamp(current + (target-current)*amount, 0, Math.max(0, baseline));
-    }
-
-    if (def.type === "pan") {
-      let normalized = (clampBi(current) + 1) / 2;
-      normalized += random(-0.20, 0.20);
-      if (Math.random() < 0.08) normalized = random(0.15, 0.85);
-      const rawTarget = clampBi(clamp01(normalized) * 2 - 1);
-      return clampBi(current + (rawTarget-current)*amount);
-    }
-
-    if (def.type === "filter") {
-      // The final D8M4 filter is bipolar (LP ← neutral → HP), unlike the old
-      // one-sided strength control. Preserve the old gentle movement character
-      // while allowing travel on either side of neutral.
-      const min = Math.max(-1, clampBi(baseline) - 0.60);
-      const max = Math.min(1, clampBi(baseline) + 0.60);
-      let target = current + random(-0.20, 0.20);
-      if (Math.random() < 0.08) target = random(Math.max(min, -0.65), Math.min(max, 0.65));
-      return clamp(target, min, max);
-    }
-
-    // Character: deliberately subtler than track/filter motion.
-    const min = Math.max(0, baseline - 0.30);
-    const max = Math.min(1, baseline + 0.30);
-    const step = Math.random() < 0.08 ? random(-0.20, 0.20) : random(-0.065, 0.065);
-    return clamp(current + step*amount, min, max);
+    // Fallback for parameters created outside a phase: still drift gently and
+    // without treating the original preset as a ceiling.
+    if (def.type === "volume") return clamp(current + random(-0.22, 0.22) * amount, 0.02, 0.98);
+    if (def.type === "pan") return clampBi(current + random(-0.45, 0.45) * amount);
+    if (def.type === "character") return clamp(current + random(-0.20, 0.20) * amount, 0, 0.92);
+    return current;
   }
 
   #gameRange(def, baseline) {
@@ -419,7 +530,8 @@ export class AutomationManager {
   #durationMs(def, current, target) {
     const span = (def.type === "pan" || def.type === "filter") ? 2 : 1;
     const distance = Math.abs(target - current) / span;
-    return 4500 + distance * 7000;
+    const base = def.type === "character" ? 18000 : def.type === "pan" ? 14500 : 16000;
+    return base + distance * 26000 + random(0, 6500);
   }
 
   #perform(def, { forced = false, game = false } = {}) {
@@ -431,7 +543,8 @@ export class AutomationManager {
     const threshold = (def.type === "pan" || def.type === "filter") ? 0.03 : 0.015;
     if (Math.abs(target - current) < threshold) return false;
     const duration = forced ? Math.min(2600, this.#durationMs(def, current, target)) : this.#durationMs(def, current, target);
-    const steps = Math.max(24, Math.round(duration / 50));
+    const tickMs = forced ? 50 : 100;
+    const steps = Math.max(24, Math.round(duration / tickMs));
     let step = 0;
     this.onStatus({ eventIncrement: 1, lastMove: def.id, movingAdd: def.id });
 
@@ -443,7 +556,7 @@ export class AutomationManager {
       }
       step += 1;
       const progress = Math.min(1, step / steps);
-      const eased = 1 - Math.pow(1 - progress, 3);
+      const eased = progress * progress * (3 - 2 * progress);
       const value = current + (target - current) * eased;
       this.applyValue(def.id, value);
       if (step >= steps) {
@@ -452,7 +565,7 @@ export class AutomationManager {
         this.applyValue(def.id, target);
         this.onStatus({ movingRemove: def.id });
       }
-    }, 50);
+    }, tickMs);
     this.moveTimers.set(def.id, timer);
     return true;
   }

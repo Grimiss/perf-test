@@ -1,0 +1,33 @@
+D8M4 RC219 — LONG-FORM EVOLUTION PASS
+
+AUTO MIX
+- Original preset is no longer a hard ceiling or constant recovery target.
+- Slow phase-based evolution across channel volume/pan and Character.
+- Musical phase types include sparse, intense, redistributed, featured-track,
+  ebb and free-drift states.
+- Compensation is probabilistic: a drop may cause another track to rise, but
+  sometimes nothing compensates and sometimes multiple tracks recede together.
+- Values can travel substantially above or below their original preset levels.
+- Movement is deliberately slow with smooth start/end curves.
+- Roughly every 15–20 minutes the mix may drift near the original preset, but
+  never performs a hard reset and then continues evolving.
+- Sparse phases can gently expose more AGE/HISS.
+
+AUTO FX
+- Independent from AUTO MIX.
+- No longer always drops selected effects to zero then restores the old level.
+- Each event moves the selected 1/2/3/ALL/RND effects toward a new evolving
+  destination and leaves the new state in place.
+- Includes tremolo-focus, delay/reverb wash, redistribution, ebb, surge and
+  free-evolution states.
+- Some events push processing up, some down, some exchange energy between
+  effects, and some make no compensating rise.
+- Rare near-zero and near-full destinations remain possible.
+- Each selected effect has its own slow move/hold timing so changes do not occur
+  in lockstep.
+- Recent effects remain less likely to be selected again immediately.
+- AUTO FX continues to temporarily own an effect so SpE leaves it alone, then
+  releases it to SpE after the new level has been reached and held.
+- Soft near-home visits can occur around 15–20 minute intervals without an exact reset.
+
+No UI/layout changes in this release.
