@@ -1,0 +1,8 @@
+D8M4 RC212
+
+FX Scope timing model update only:
+- ATTACK renamed/defined as TAKE OFF: 0,0 to recorded gesture start.
+- Added FLIGHT TIME: duration from recorded gesture start to recorded gesture end.
+- RELEASE renamed/defined as LANDING: recorded gesture end back to 0,0.
+- INF still holds the event at its endpoint; leaving INF uses LANDING to return to neutral.
+- Existing RC211 performance, AUTO MIX, AUTO FX and layout behavior otherwise preserved.

@@ -199,6 +199,7 @@ export class AppController {
         draft.fxMod.timeMode = preset.fxMod?.timeMode ?? draft.fxMod.timeMode ?? "01";
         draft.fxMod.probMode = preset.fxMod?.probMode ?? draft.fxMod.probMode ?? "x1";
         draft.fxMod.attackMs = Math.max(250, Math.min(8000, Number(preset.fxMod?.attackMs) || draft.fxMod.attackMs || 1800));
+        draft.fxMod.flightMs = Math.max(500, Math.min(12000, Number(preset.fxMod?.flightMs) || draft.fxMod.flightMs || 4000));
         draft.fxMod.releaseMs = Math.max(500, Math.min(12000, Number(preset.fxMod?.releaseMs) || draft.fxMod.releaseMs || 4000));
         draft.fxMod.infinite = Boolean(preset.fxMod?.infinite ?? (preset.fxMod?.timeMode === 'INF'));
         draft.fxMod.influence = ['LOW','MED','HIGH'].includes(String(preset.fxMod?.influence || draft.fxMod.influence || 'MED').toUpperCase()) ? String(preset.fxMod?.influence || draft.fxMod.influence || 'MED').toUpperCase() : 'MED';
@@ -372,6 +373,12 @@ export class AppController {
     this.fxMod.onTimingChanged?.();
     this.#persistFxScopePreset();
   }
+  setFxModFlight(value){
+    const safe=Math.max(500,Math.min(12000,Number(value)||4000));
+    this.store.update(d=>{d.fxMod.flightMs=safe;},{reason:'fxmod-flight'});
+    this.fxMod.onTimingChanged?.();
+    this.#persistFxScopePreset();
+  }
   setFxModRelease(value){
     const safe=Math.max(500,Math.min(12000,Number(value)||4000));
     this.store.update(d=>{d.fxMod.releaseMs=safe;},{reason:'fxmod-release'});
@@ -423,6 +430,7 @@ export class AppController {
       d.fxMod.probMode='x1';
       d.fxMod.hold='normal';
       d.fxMod.attackMs=1800;
+      d.fxMod.flightMs=4000;
       d.fxMod.releaseMs=4000;
       d.fxMod.infinite=false;
       d.fxMod.influence='MED';
@@ -661,6 +669,7 @@ export class AppController {
       timeMode: fx.timeMode,
       probMode: fx.probMode,
       attackMs: Number(fx.attackMs) || 1800,
+      flightMs: Number(fx.flightMs) || 4000,
       releaseMs: Number(fx.releaseMs) || 4000,
       infinite: Boolean(fx.infinite),
       influence: String(fx.influence || 'MED').toUpperCase(),

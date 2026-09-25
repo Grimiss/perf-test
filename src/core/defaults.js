@@ -33,6 +33,7 @@ export function createInitialState(preset) {
       timeMode: preset.fxMod?.timeMode ?? "01", // legacy compatibility
       probMode: preset.fxMod?.probMode ?? "x1",
       attackMs: Math.max(250, Math.min(8000, Number(preset.fxMod?.attackMs) || 1800)),
+      flightMs: Math.max(500, Math.min(12000, Number(preset.fxMod?.flightMs) || 4000)),
       releaseMs: Math.max(500, Math.min(12000, Number(preset.fxMod?.releaseMs) || 4000)),
       infinite: Boolean(preset.fxMod?.infinite ?? (preset.fxMod?.timeMode === "INF")),
       influence: ["LOW","MED","HIGH"].includes(String(preset.fxMod?.influence || "MED").toUpperCase()) ? String(preset.fxMod?.influence || "MED").toUpperCase() : "MED",

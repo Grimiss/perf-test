@@ -1,0 +1,8 @@
+D8M4 RC211
+
+- Enlarged current Soundscape name on BYD/FX Station in cyan ZX font.
+- Fixed live Soundscape/track-name refresh when changing Soundscapes.
+- Reduced small CRT Soundscape-name size.
+- Enlarged JSON channel names and colour-matched them to CH1-CH4.
+- Re-laid out Special Event and AUTO FX controls as separate right-side panels to remove overlap.
+- RC210 audio/automation/performance behaviour otherwise preserved.

@@ -116,6 +116,7 @@ export class FxModManager {
   #timeMode(){ return this.store.getState().fxMod?.timeMode || 'CUSTOM'; }
   #isInfinity(){ const fx=this.store.getState().fxMod||{}; return Boolean(fx.infinite || fx.timeMode==='INF'); }
   #attackMs(){ return Math.max(250,Math.min(8000,Number(this.store.getState().fxMod?.attackMs)||1800)); }
+  #flightMs(){ return Math.max(500,Math.min(12000,Number(this.store.getState().fxMod?.flightMs)||4000)); }
   #recoverMs(){ return Math.max(500,Math.min(12000,Number(this.store.getState().fxMod?.releaseMs)||4000)); }
   #influenceScale(){ const m=String(this.store.getState().fxMod?.influence||'MED').toUpperCase(); return m==='LOW'?.45:m==='HIGH'?1:.72; }
   #fx(){ return this.store.getState().fxMod || {}; }
@@ -352,14 +353,16 @@ export class FxModManager {
     while(firstMeaningful<clean.length-1 && Math.hypot(clean[firstMeaningful].x,clean[firstMeaningful].y)<.025) firstMeaningful++;
     const entry=clean[firstMeaningful]||clean[clean.length-1];
     const entryX=clampBi(entry.x*scale), entryY=clampBi(entry.y*scale);
-    const entryDistance=Math.hypot(entryX,entryY);
-    const totalAttack=this.#attackMs();
-    const leadInMs=Math.max(140,Math.min(totalAttack*.35,160+entryDistance*220));
+    // RC212 flight model:
+    // TAKE OFF = 0,0 -> recorded gesture start point.
+    // FLIGHT TIME = recorded gesture start -> recorded gesture end.
+    // LANDING = recorded gesture end -> 0,0.
+    const leadInMs=this.#attackMs();
 
     const gestureStartT=entry.t;
     const gestureEndT=clean[clean.length-1].t;
     const recordedDuration=Math.max(1,gestureEndT-gestureStartT);
-    const gestureDuration=Math.max(120,totalAttack-leadInMs);
+    const gestureDuration=this.#flightMs();
     const start=performance.now();
 
     const finishGesture=()=>{
@@ -367,9 +370,7 @@ export class FxModManager {
       const ex=clampBi(end.x*scale), ey=clampBi(end.y*scale);
       this.#applyXY(ex,ey,'SPIKE');
       if(this.#isInfinity()){
-        const vx=(Number(rv.x)||0)*scale, vy=(Number(rv.y)||0)*scale;
-        if(Math.hypot(vx,vy)>.22) this.#coast(vx,vy);
-        else this.onStatus({active:true,stage:'HOLD'});
+        this.onStatus({active:true,x:ex,y:ey,stage:'HOLD'});
       } else {
         this.#recoverFrom(ex,ey);
       }
@@ -384,7 +385,7 @@ export class FxModManager {
         // Smootherstep gives zero velocity at both ends. The marker therefore
         // leaves 0,0 gently and joins the stored gesture without a visible kick.
         const e=p*p*p*(p*(p*6-15)+10);
-        this.#applyXY(entryX*e,entryY*e,'LEADIN');
+        this.#applyXY(entryX*e,entryY*e,'TAKEOFF');
         this.timer=setTimeout(step,16);
         return;
       }
@@ -394,7 +395,7 @@ export class FxModManager {
 
       const recordedElapsed=(gestureElapsed/gestureDuration)*recordedDuration;
       const sample=this.#sampleAt(clean,gestureStartT+recordedElapsed);
-      this.#applyXY(clampBi(sample.x*scale),clampBi(sample.y*scale),'SPIKE');
+      this.#applyXY(clampBi(sample.x*scale),clampBi(sample.y*scale),'FLIGHT');
       this.timer=setTimeout(step,16);
     };
     step();
@@ -417,14 +418,17 @@ export class FxModManager {
     this.onStatus({active:true,x,y,stage});
   }
   #animateTo(x,y,source){
-    const g=this.generation, start=performance.now(), attack=this.#attackMs();
+    const g=this.generation, start=performance.now(), takeOff=this.#attackMs(), flight=this.#flightMs();
     const step=()=>{
       if(g!==this.generation||this.manual)return;
-      const p=Math.min(1,(performance.now()-start)/attack), e=1-Math.pow(1-p,3);
-      this.#applyXY(x*e,y*e,'SPIKE');
-      if(p<1)this.timer=setTimeout(step,32);
-      else if(this.#isInfinity()) this.onStatus({active:true,stage:'HOLD'});
-      else this.#recoverFrom(x,y);
+      const elapsed=performance.now()-start;
+      const p=Math.min(1,elapsed/takeOff), e=1-Math.pow(1-p,3);
+      this.#applyXY(x*e,y*e,'TAKEOFF');
+      if(p<1){ this.timer=setTimeout(step,32); return; }
+      if(this.#isInfinity()){ this.onStatus({active:true,x,y,stage:'HOLD'}); return; }
+      const remaining=Math.max(0,flight-(elapsed-takeOff));
+      this.onStatus({active:true,x,y,stage:'FLIGHT'});
+      this.timer=setTimeout(()=>{ if(g===this.generation&&!this.manual)this.#recoverFrom(x,y); },remaining);
     };
     step();
   }
@@ -440,7 +444,7 @@ export class FxModManager {
       // from its INF motion and settles gently at the neutral 0,0 position.
       const smooth=p*p*p*(p*(p*6-15)+10);
       const e=1-smooth;
-      this.#applyXY(sx*e, sy*e, 'RECOVER');
+      this.#applyXY(sx*e, sy*e, 'LANDING');
       if(p<1){
         this.timer=setTimeout(step,16);
       }else{
