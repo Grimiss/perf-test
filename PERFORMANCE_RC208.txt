@@ -1,0 +1,13 @@
+D8M4 RC208 PERFORMANCE / FUNCTION PASS
+
+- Preserves RC207 SAFE / SMOOTH profiles.
+- Requests Screen Wake Lock after first interaction and reacquires it when the page becomes visible.
+- Sleep timer now fades the master mix to silence over 10 seconds before STOP.
+- FX Scope: manual effect/filter/intensity grabs temporarily override SpE; release hands control back to SpE around the newly-set baseline.
+- Replaced TIME control with ATTACK and RELEASE sliders plus INF hold.
+- Added LOW / MED / HIGH Special Event influence control.
+- Added FX Scope ownership/status indicator: AUTO MIX, SPECIAL EVENT, MANUAL OVERRIDE, INF HOLD.
+- Auto Mix movement ranges increased moderately.
+- TV/main rockers are now covered by live-control render throttling; OSD no longer rebuilds its DOM on every rocker repeat.
+- TONE OSD changed to BASS / TREB scale with fixed centre marker and moving marker.
+- DEV windows remain disabled in the performance build.

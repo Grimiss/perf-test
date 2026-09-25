@@ -2,6 +2,7 @@ import { OperationGate } from "./OperationGate.js";
 import { AutomationManager } from "../automation/AutomationManager.js";
 import { SpecialEventManager } from "../automation/SpecialEventManager.js";
 import { FxModManager } from "../automation/FxModManager.js";
+import { AutoFxManager } from "../automation/AutoFxManager.js";
 import { getPerformanceProfile } from '../perf/PerformanceProfile.js';
 
 export class AppController {
@@ -39,6 +40,13 @@ export class AppController {
       suspend: (id) => this.automation.suspend(id),
       resume: (id) => this.automation.resume(id),
       onStatus: (patch) => this.#updateFxModStatus(patch)
+    });
+    this.autoFx = new AutoFxManager({
+      store,
+      applyLevel: (name, value) => this.#applyAutoFxLevel(name, value),
+      beginOverride: (id) => this.fxMod.beginParamOverride?.(id),
+      endOverride: (id) => this.fxMod.endParamOverride?.(id),
+      onStatus: (patch) => this.#updateAutoFxStatus(patch)
     });
   }
 
@@ -79,6 +87,7 @@ export class AppController {
       }, { reason: "play" });
       this.automation.onTransport("playing");
       this.fxMod.onTransport("playing");
+      this.autoFx.onTransport("playing");
     } catch (error) {
       this.loadingPromise = null;
       this.#handleError(error);
@@ -90,6 +99,7 @@ export class AppController {
     if (this.store.getState().transport.status !== "playing") return;
     this.automation.onTransport("paused");
     this.fxMod.onTransport("paused");
+    this.autoFx.onTransport("paused");
     const completed = await this.audioEngine.pause();
     if (!completed) return;
     this.store.update((draft) => {
@@ -102,6 +112,7 @@ export class AppController {
     this.playGate.invalidate();
     this.automation.onTransport("stopped");
     this.fxMod.onTransport("stopped");
+    this.autoFx.onTransport("stopped");
     if (this.audioEngine.context) {
       const rampEnabled = this.store.getState().transport.rampEnabled !== false;
       const completed = await this.audioEngine.stop({ fade: rampEnabled, rateRampSeconds: 0.6 });
@@ -113,6 +124,26 @@ export class AppController {
     }, { reason: "stop" });
   }
 
+  async timerFadeOutAndStop(seconds = 10) {
+    this.playGate.invalidate();
+    this.automation.onTransport("stopped");
+    this.fxMod.onTransport("stopped");
+    this.autoFx.onTransport("stopped");
+    const state = this.store.getState();
+    if (this.audioEngine.context && state.transport.status === "playing") {
+      await this.audioEngine.fadeMasterToSilence(seconds);
+      await this.audioEngine.stop({ fade: false, rateRampSeconds: 0 });
+      this.audioEngine.setMainVolume(state.master.muted ? 0 : state.master.volume);
+    } else if (this.audioEngine.context) {
+      await this.audioEngine.stop({ fade: false, rateRampSeconds: 0 });
+      this.audioEngine.setMainVolume(state.master.muted ? 0 : state.master.volume);
+    }
+    this.store.update((draft) => {
+      draft.transport.status = "stopped";
+      draft.dev.message = "Timer ended: master mix faded smoothly to silence, then stopped.";
+    }, { reason: "timer-stop" });
+  }
+
   async selectSoundscape(id) {
     const current = this.store.getState();
     if (!current.availableSoundscapes.includes(id)) return;
@@ -120,6 +151,7 @@ export class AppController {
     const token = this.soundscapeGate.begin();
     const priorTransport = current.transport.status;
     this.specialEvent.cancel({ restore: true });
+    this.autoFx.onTransport("stopped");
     this.automation.onSoundscapeChanging();
     this.store.update((draft) => {
       draft.soundscape.loading = true;
@@ -166,6 +198,11 @@ export class AppController {
         draft.fxMod.hold = preset.fxMod?.hold ?? draft.fxMod.hold ?? "normal";
         draft.fxMod.timeMode = preset.fxMod?.timeMode ?? draft.fxMod.timeMode ?? "01";
         draft.fxMod.probMode = preset.fxMod?.probMode ?? draft.fxMod.probMode ?? "x1";
+        draft.fxMod.attackMs = Math.max(250, Math.min(8000, Number(preset.fxMod?.attackMs) || draft.fxMod.attackMs || 1800));
+        draft.fxMod.releaseMs = Math.max(500, Math.min(12000, Number(preset.fxMod?.releaseMs) || draft.fxMod.releaseMs || 4000));
+        draft.fxMod.infinite = Boolean(preset.fxMod?.infinite ?? (preset.fxMod?.timeMode === 'INF'));
+        draft.fxMod.influence = ['LOW','MED','HIGH'].includes(String(preset.fxMod?.influence || draft.fxMod.influence || 'MED').toUpperCase()) ? String(preset.fxMod?.influence || draft.fxMod.influence || 'MED').toUpperCase() : 'MED';
+        draft.fxMod.manualOverrideCount = 0;
         draft.fxMod.memoryX = preset.fxMod?.memoryX ?? 0;
         draft.fxMod.memoryY = preset.fxMod?.memoryY ?? 0;
         draft.fxMod.trajectory = Array.isArray(preset.fxMod?.trajectory) ? preset.fxMod.trajectory.map((p) => ({ t: Number(p?.t) || 0, x: Number(p?.x) || 0, y: Number(p?.y) || 0 })) : [];
@@ -181,6 +218,7 @@ export class AppController {
       this.#syncProcessingStateToEngine();
       this.automation.onSoundscapeChanged();
       this.fxMod.setEnabled(this.store.getState().fxMod.enabled);
+      if(priorTransport === "playing") this.autoFx.onTransport("playing");
     } catch (error) {
       this.store.update((draft) => { draft.soundscape.loading = false; }, { reason: "soundscape-loading-failed" });
       if (priorTransport === "playing" && this.store.getState().autoMix.enabled) this.automation.onTransport("playing");
@@ -195,7 +233,10 @@ export class AppController {
   #setTrackParam(index, param, value, source = "manual") {
     this.store.update((draft) => { draft.tracks[index][param] = value; }, { reason: source === "manual" ? `track-${param}` : `automix-track-${param}` });
     if (this.store.getState().soundscape.loaded) this.audioEngine.setTrackParam(index, param, value);
-    if (source === "manual") this.automation.manualIntervention(`track:${index}:${param}`, value);
+    if (source === "manual") {
+      this.automation.manualIntervention(`track:${index}:${param}`, value);
+      if (param === 'filter') this.fxMod.manualOverrideValue?.(`track:${index}:filter`, value);
+    }
   }
 
   toggleMute(index) {
@@ -254,6 +295,7 @@ export class AppController {
     this.store.update((draft) => { draft.effects[name].level = safe; }, { reason: `effect-${name}-level` });
     if (this.audioEngine.context) this.audioEngine.setEffect(name, { level: safe });
     this.automation.manualIntervention(`effect:${name}`, safe);
+    this.fxMod.manualOverrideValue?.(`effect:${name}`, safe);
   }
 
   toggleEffect(name) {
@@ -309,6 +351,7 @@ export class AppController {
     const prior = this.store.getState().intensity;
     this.store.update((draft) => { draft.intensity = safe; }, { reason: "intensity" });
     if (this.audioEngine.context) this.audioEngine.setTiming(this.store.getState().frs, safe);
+    this.fxMod.manualOverrideValue?.('global:intensity', safe);
     this.fxMod.triggerFromIntensity(safe - prior);
   }
 
@@ -323,19 +366,44 @@ export class AppController {
     this.store.update(draft=>{draft.fxMod.hold=safe;},{reason:"fxmod-hold"});
     this.fxMod.onHoldChanged(safe);
   }
-  setFxModTime(mode){
-    const safe=['01','02','05','10','INF'].includes(mode)?mode:'01';
-    const current=this.store.getState().fxMod?.timeMode || '01';
-    this.store.update(d=>{d.fxMod.timeMode=safe; d.fxMod.hold=safe==='INF'?'infinity':'normal';}, {reason:'fxmod-time'});
-    this.fxMod.onTimeChanged?.(safe,{fromInfinity:current==='INF'});
+  setFxModAttack(value){
+    const safe=Math.max(250,Math.min(8000,Number(value)||1800));
+    this.store.update(d=>{d.fxMod.attackMs=safe;},{reason:'fxmod-attack'});
+    this.fxMod.onTimingChanged?.();
     this.#persistFxScopePreset();
   }
-  cycleFxModTime(){
-    const order=['01','02','05','10','INF'];
-    const current=this.store.getState().fxMod?.timeMode || '01';
-    const next=order[(order.indexOf(current)+1+order.length)%order.length] || '01';
-    this.setFxModTime(next);
+  setFxModRelease(value){
+    const safe=Math.max(500,Math.min(12000,Number(value)||4000));
+    this.store.update(d=>{d.fxMod.releaseMs=safe;},{reason:'fxmod-release'});
+    this.fxMod.onTimingChanged?.();
+    this.#persistFxScopePreset();
   }
+  toggleFxModInfinite(){
+    const next=!Boolean(this.store.getState().fxMod?.infinite);
+    this.store.update(d=>{d.fxMod.infinite=next;d.fxMod.timeMode=next?'INF':'CUSTOM';d.fxMod.hold=next?'infinity':'normal';},{reason:'fxmod-infinite'});
+    this.fxMod.onInfinityChanged?.(next);
+    this.#persistFxScopePreset();
+  }
+  setFxModInfluence(mode){
+    const safe=['LOW','MED','HIGH'].includes(String(mode).toUpperCase())?String(mode).toUpperCase():'MED';
+    this.store.update(d=>{d.fxMod.influence=safe;},{reason:'fxmod-influence'});
+    this.#persistFxScopePreset();
+  }
+  cycleFxModInfluence(){
+    const order=['LOW','MED','HIGH']; const cur=String(this.store.getState().fxMod?.influence||'MED').toUpperCase();
+    this.setFxModInfluence(order[(order.indexOf(cur)+1+order.length)%order.length]||'MED');
+  }
+  // Legacy TIME calls are retained for old presets/buttons but map to the new timing model.
+  setFxModTime(mode){
+    const safe=['01','02','05','10','INF'].includes(mode)?mode:'01';
+    if(safe==='INF'){ if(!this.store.getState().fxMod?.infinite)this.toggleFxModInfinite(); return; }
+    const ms=Number(safe)*1000;
+    this.store.update(d=>{d.fxMod.timeMode='CUSTOM';d.fxMod.infinite=false;d.fxMod.releaseMs=Math.max(500,ms);d.fxMod.hold='normal';},{reason:'fxmod-time-legacy'});
+    this.fxMod.onTimingChanged?.(); this.#persistFxScopePreset();
+  }
+  cycleFxModTime(){ this.toggleFxModInfinite(); }
+  beginFxModParamOverride(id){ this.fxMod.beginParamOverride?.(id); }
+  endFxModParamOverride(id){ this.fxMod.endParamOverride?.(id); }
   setFxModProb(mode){
     const safe=(['x1','x2','x5','x10','RND'].includes(mode)?mode:'x1');
     this.store.update(d=>{d.fxMod.probMode=safe;}, {reason:'fxmod-prob'});
@@ -351,9 +419,14 @@ export class AppController {
   resetFxModPattern(){
     this.fxMod.cancel?.(true);
     this.store.update(d=>{
-      d.fxMod.timeMode='01';
+      d.fxMod.timeMode='CUSTOM';
       d.fxMod.probMode='x1';
       d.fxMod.hold='normal';
+      d.fxMod.attackMs=1800;
+      d.fxMod.releaseMs=4000;
+      d.fxMod.infinite=false;
+      d.fxMod.influence='MED';
+      d.fxMod.manualOverrideCount=0;
       d.fxMod.memoryX=0;
       d.fxMod.memoryY=0;
       d.fxMod.trajectory=[];
@@ -362,7 +435,7 @@ export class AppController {
       d.fxMod.x=0;
       d.fxMod.y=0;
     }, {reason:'fxmod-reset'});
-    this.fxMod.onTimeChanged?.('01');
+    this.fxMod.onTimingChanged?.();
     this.#persistFxScopePreset();
   }
   toggleFxModParam(param){
@@ -399,6 +472,28 @@ export class AppController {
   }
 
   toggleAutoMix() { this.setAutoMixEnabled(!this.store.getState().autoMix.enabled); }
+
+  setAutoMixLevel(group, level) {
+    const safe=["LOW","MED","HIGH"].includes(String(level).toUpperCase())?String(level).toUpperCase():"MED";
+    const key=group==="character"?"characterLevel":"channelLevel";
+    this.store.update(d=>{d.autoMix[key]=safe;},{reason:`automix-${group}-level`});
+  }
+
+  setAutoFxEnabled(enabled) {
+    const safe=Boolean(enabled);
+    if(Boolean(this.store.getState().autoFx?.enabled)===safe)return;
+    this.store.update(d=>{d.autoFx.enabled=safe;},{reason:'autofx-enabled'});
+    this.autoFx.setEnabled(safe);
+  }
+  toggleAutoFx(){this.setAutoFxEnabled(!this.store.getState().autoFx?.enabled);}
+  setAutoFxCountMode(mode){
+    const safe=['1','2','3','ALL','RND'].includes(String(mode).toUpperCase())?String(mode).toUpperCase():'1';
+    this.store.update(d=>{d.autoFx.countMode=safe;},{reason:'autofx-count'});this.autoFx.settingsChanged();
+  }
+  setAutoFxFrequency(mode){
+    const safe=['LOW','MED','HIGH'].includes(String(mode).toUpperCase())?String(mode).toUpperCase():'MED';
+    this.store.update(d=>{d.autoFx.frequency=safe;},{reason:'autofx-frequency'});this.autoFx.settingsChanged();
+  }
 
   setRampEnabled(enabled) {
     const safe = Boolean(enabled);
@@ -534,6 +629,22 @@ export class AppController {
     }
   }
 
+  #applyAutoFxLevel(name, value) {
+    const safe=Math.max(0,Math.min(1,Number(value)));
+    if(this.audioEngine.context)this.audioEngine.setEffect(name,{level:safe});
+    this.fxModPendingEffects.set(name,safe);
+    this.#queueFxModFlush();
+  }
+
+  #updateAutoFxStatus(patch) {
+    this.store.update(d=>{
+      if(patch.active!==undefined)d.autoFx.active=Boolean(patch.active);
+      if(Array.isArray(patch.activeEffects))d.autoFx.activeEffects=[...patch.activeEffects];
+      if(Array.isArray(patch.lastEffects))d.autoFx.lastEffects=[...patch.lastEffects];
+      if(patch.baselines)d.autoFx.baselines={...(d.autoFx.baselines||{}),...patch.baselines};
+    },{reason:'autofx-status'});
+  }
+
   #applySpecialEffectLevel(name, value) {
     const safe = Math.max(0, Math.min(1, Number(value)));
     this.store.update((draft) => { draft.effects[name].level = safe; }, { reason: `special-event-${name}` });
@@ -549,6 +660,10 @@ export class AppController {
       hold: fx.hold,
       timeMode: fx.timeMode,
       probMode: fx.probMode,
+      attackMs: Number(fx.attackMs) || 1800,
+      releaseMs: Number(fx.releaseMs) || 4000,
+      infinite: Boolean(fx.infinite),
+      influence: String(fx.influence || 'MED').toUpperCase(),
       memoryX: Number(fx.memoryX) || 0,
       memoryY: Number(fx.memoryY) || 0,
       trajectory: Array.isArray(fx.trajectory) ? fx.trajectory.map((p) => ({ t: Number(p?.t) || 0, x: Number(p?.x) || 0, y: Number(p?.y) || 0 })) : [],
@@ -559,7 +674,7 @@ export class AppController {
 
   #queueFxModFlush() {
     if (this.fxModFrameRequest !== null) return;
-    // RC207: audio is still applied immediately. SAFE/SMOOTH only changes
+    // RC208: audio is still applied immediately. SAFE/SMOOTH only changes
     // how frequently FX Scope state/UI snapshots are published.
     this.fxModFrameRequest = setTimeout(() => {
       this.fxModFrameRequest = null;
@@ -598,6 +713,7 @@ export class AppController {
           if(patch.scopeEpochMs!==undefined)d.fxMod.scopeEpochMs=patch.scopeEpochMs;
           if(patch.scopeCycleMs!==undefined)d.fxMod.scopeCycleMs=patch.scopeCycleMs;
           if(patch.scopePassCount!==undefined)d.fxMod.scopePassCount=patch.scopePassCount;
+          if(patch.manualOverrideCount!==undefined)d.fxMod.manualOverrideCount=Math.max(0,Number(patch.manualOverrideCount)||0);
         }
       },{reason:'fxmod-frame'});
 

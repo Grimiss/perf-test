@@ -342,6 +342,18 @@ export class AudioEngine {
     this.masterGain.gain.setTargetAtTime(safe, now, 0.015);
   }
 
+
+  async fadeMasterToSilence(seconds = 10) {
+    if (!this.context || !this.masterGain) return false;
+    const duration = Math.max(0.5, Number(seconds) || 10);
+    const now = this.context.currentTime;
+    const gain = this.masterGain.gain;
+    if (gain.cancelAndHoldAtTime) gain.cancelAndHoldAtTime(now); else gain.cancelScheduledValues(now);
+    gain.linearRampToValueAtTime(0, now + duration);
+    await new Promise((resolve) => window.setTimeout(resolve, Math.ceil((duration + 0.04) * 1000)));
+    return true;
+  }
+
   setOutputMode(mode) {
     if (!this.context || !this.stereoModeGain || !this.monoModeGain) return;
     const next = mode === "mono" ? "mono" : "stereo";

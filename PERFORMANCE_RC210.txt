@@ -1,0 +1,7 @@
+D8M4 RC210
+
+- Soundscape 1 renamed to Time Becomes Time.
+- Soundscape 2 renamed to Spacious.
+- Current soundscape name shown at top of BYD and FX STATION.
+- JSON track names shown directly below CH1-CH4 on BYD and FX STATION.
+- RC209 AUTO MIX/AUTO FX and performance behaviour preserved.

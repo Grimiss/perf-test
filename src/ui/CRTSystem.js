@@ -109,6 +109,14 @@ export class CRTSystem {
     this.scopeSweepFrame = null;
   }
 
+  #fxOverrideIdForInput(el){
+    const kind=el?.dataset?.kind;
+    if(kind==='effect-level' && el.dataset.name)return `effect:${el.dataset.name}`;
+    if(kind==='track-filter' && el.dataset.index!=null)return `track:${Number(el.dataset.index)}:filter`;
+    if(kind==='intensity')return 'global:intensity';
+    return null;
+  }
+
   bind() {
     if (this.bound) return;
     this.bound = true;
@@ -120,9 +128,16 @@ export class CRTSystem {
       if (e.target instanceof HTMLInputElement && e.target.type === 'range') {
         clearTimeout(this.interactionReleaseTimer);
         this.interacting = true;
+        const id=this.#fxOverrideIdForInput(e.target);
+        if(id){ e.target.dataset.fxOverrideId=id; this.controller.beginFxModParamOverride?.(id); }
       }
     }, true);
+    window.addEventListener('pointercancel', () => {
+      this.root.querySelectorAll('input[data-fx-override-id]').forEach(el=>{ const id=el.dataset.fxOverrideId; delete el.dataset.fxOverrideId; if(id)this.controller.endFxModParamOverride?.(id); });
+    }, true);
+
     window.addEventListener('pointerup', () => {
+      this.root.querySelectorAll('input[data-fx-override-id]').forEach(el=>{ const id=el.dataset.fxOverrideId; delete el.dataset.fxOverrideId; if(id)this.controller.endFxModParamOverride?.(id); });
       if (!this.interacting) return;
       clearTimeout(this.interactionReleaseTimer);
       this.interactionReleaseTimer = setTimeout(() => {
@@ -232,9 +247,16 @@ export class CRTSystem {
       else if (action === 'frequency-random') this.controller.toggleTrackFrequencyRandom(Number(el.dataset.index));
       else if (action === 'tape') this.controller.setTapeType(el.dataset.type);
       else if (action === 'automix') this.controller.toggleAutoMix();
+      else if (action === 'ramp-toggle') this.controller.toggleRamp();
+      else if (action === 'automix-level') this.controller.setAutoMixLevel(el.dataset.group, el.dataset.level);
+      else if (action === 'autofx') this.controller.toggleAutoFx();
+      else if (action === 'autofx-count') this.controller.setAutoFxCountMode(el.dataset.mode);
+      else if (action === 'autofx-frequency') this.controller.setAutoFxFrequency(el.dataset.mode);
       else if (action === 'fxmod-toggle') this.controller.toggleFxMod();
       else if (action === 'fxmod-hold') this.controller.setFxModHold(el.dataset.mode);
       else if (action === 'fxmod-time') this.controller.cycleFxModTime();
+      else if (action === 'fxmod-infinite') this.controller.toggleFxModInfinite();
+      else if (action === 'fxmod-influence') this.controller.cycleFxModInfluence();
       else if (action === 'fxmod-prob') this.controller.cycleFxModProb();
       else if (action === 'fxmod-time-select') this.controller.setFxModTime(el.dataset.mode);
       else if (action === 'fxmod-prob-select') this.controller.setFxModProb(el.dataset.mode);
@@ -306,6 +328,8 @@ export class CRTSystem {
       else if (kind === 'game-volume') this.controller.setGameVolume(value / 100);
       else if (kind === 'brightness') this.controller.setBrightness(value / 100);
       else if (kind === 'tone') this.controller.setMasterTone(value / 100);
+      else if (kind === 'fxmod-attack') this.controller.setFxModAttack(value);
+      else if (kind === 'fxmod-release') this.controller.setFxModRelease(value);
     });
 
     this.root.addEventListener('dblclick', (e) => {
@@ -439,6 +463,11 @@ export class CRTSystem {
         el.classList.toggle('active', el.dataset.mode === state.frs));
       this.root.querySelectorAll('[data-action="tape"]').forEach(el =>
         el.classList.toggle('active', el.dataset.type === state.tapeType));
+      const bydAuto=this.root.querySelector('.byd-screen [data-action="automix"]');
+      if(bydAuto){bydAuto.classList.toggle('active',state.autoMix.enabled);bydAuto.textContent=`AUTO MIX ${state.autoMix.enabled?'ON':'OFF'}`;}
+      const bydRamp=this.root.querySelector('.byd-screen [data-action="ramp-toggle"]');
+      if(bydRamp){const on=state.transport.rampEnabled!==false;bydRamp.classList.toggle('active',on);bydRamp.textContent=`RAMP ${on?'ON':'OFF'}`;}
+      this.root.querySelectorAll('.byd-screen [data-action="automix-level"]').forEach(b=>{const key=b.dataset.group==='character'?'characterLevel':'channelLevel';b.classList.toggle('active',String(state.autoMix[key]||'MED').toUpperCase()===b.dataset.level);});
       return;
     }
 
@@ -473,8 +502,27 @@ export class CRTSystem {
         auto.classList.toggle('active', state.autoMix.enabled);
         auto.textContent = `AUTO MIX ${state.autoMix.enabled ? 'ON' : 'OFF'}`;
       }
+      const autoFx=this.root.querySelector('[data-action="autofx"]');
+      if(autoFx){autoFx.classList.toggle('active',Boolean(state.autoFx?.enabled));autoFx.textContent=`AUTO FX ${state.autoFx?.enabled?'ON':'OFF'}`;}
+      this.root.querySelectorAll('[data-action="autofx-count"]').forEach(b=>b.classList.toggle('active',String(state.autoFx?.countMode||'1').toUpperCase()===b.dataset.mode));
+      this.root.querySelectorAll('[data-action="autofx-frequency"]').forEach(b=>b.classList.toggle('active',String(state.autoFx?.frequency||'MED').toUpperCase()===b.dataset.mode));
       const fxmod=this.root.querySelector('[data-action="fxmod-toggle"]');
       if(fxmod){fxmod.classList.toggle('active',state.fxMod.enabled);fxmod.textContent=state.fxMod.enabled?'ON':'OFF';}
+      const attackInput=this.root.querySelector('input[data-kind="fxmod-attack"]');
+      if(attackInput){ if(document.activeElement!==attackInput) attackInput.value=String(Math.round(state.fxMod.attackMs||1800)); attackInput.disabled=Boolean(state.fxMod.infinite); }
+      const releaseInput=this.root.querySelector('input[data-kind="fxmod-release"]');
+      if(releaseInput){ if(document.activeElement!==releaseInput) releaseInput.value=String(Math.round(state.fxMod.releaseMs||4000)); releaseInput.disabled=Boolean(state.fxMod.infinite); }
+      const infButton=this.root.querySelector('[data-action="fxmod-infinite"]');
+      if(infButton){infButton.classList.toggle('active',Boolean(state.fxMod.infinite));infButton.textContent=state.fxMod.infinite?'INF ON':'INF';}
+      const influence=this.root.querySelector('[data-fxmod-influence-value]');
+      if(influence) influence.textContent=String(state.fxMod.influence||'MED').toUpperCase();
+      const owner=this.root.querySelector('[data-fx-control-status]');
+      if(owner){
+        const manual=(state.fxMod.manualOverrideCount||0)>0;
+        const text=manual?'MANUAL OVERRIDE':(state.autoFx?.active&&state.fxMod.active?'SPE + AUTO FX':state.autoFx?.active?'AUTO FX':state.fxMod.active?(state.fxMod.infinite&&state.fxMod.stage==='HOLD'?'SPE · INF HOLD':'SPECIAL EVENT'):(state.autoMix.enabled?'AUTO MIX':'MANUAL'));
+        owner.textContent=text; owner.dataset.owner=manual?'manual':state.autoFx?.active?'autofx':state.fxMod.active?'spe':state.autoMix.enabled?'automix':'manual';
+      }
+
       const timeReadout=this.root.querySelector('[data-fxmod-time-value]');
       if(timeReadout) timeReadout.textContent=state.fxMod.timeMode||'01';
       const probReadout=this.root.querySelector('[data-fxmod-prob-value]');
@@ -912,7 +960,7 @@ Choose your destination:  "><div class="spectrum-typed-line"><span class="typed-
   renderBYD(state) {
     const channelColors=['red','green','blue','yellow'];
     const channels=state.tracks.map((t,i)=>`<section data-dev-layer="live" data-dev-key="ch${i+1}" class="byd2-channel byd2-${channelColors[i]}">
-      <div class="byd2-channel-title">CH${i+1}</div>
+      <div class="byd2-channel-title">CH${i+1}</div><div class="byd2-channel-name" title="${String(t.name||'').replace(/"/g,'&quot;')}">${t.name||''}</div>
       ${[
         ['LOOP VOL','track-volume','volume',0,100,Math.round(t.volume*100)],
         ['PAN','track-pan','pan',-100,100,Math.round(t.pan*100)]
@@ -925,10 +973,14 @@ Choose your destination:  "><div class="spectrum-typed-line"><span class="typed-
 
     const chars=[['age','AGE'],['hiss','HISS'],['wowFlutter','W & F']].map(([name,label])=>`<div class="byd2-global-row byd2-char-row"><span>${label}</span><input data-kind="character" data-reset="character" data-name="${name}" type="range" min="0" max="100" value="${Math.round(state.character[name]*100)}"></div>`).join('');
 
+    const autoMixLevelButtons=(group,current)=>['LOW','MED','HIGH'].map(level=>`<button data-action="automix-level" data-group="${group}" data-level="${level}" data-menu-item class="byd-auto-level ${String(current||'MED').toUpperCase()===level?'active':''}">${level}</button>`).join('');
+    const autoPanel=`<section class="byd-auto-panel"><button data-action="automix" data-menu-item class="d8m4-auto-main ${state.autoMix.enabled?'active':''}">AUTO MIX ${state.autoMix.enabled?'ON':'OFF'}</button><button data-action="ramp-toggle" data-menu-item class="d8m4-auto-main d8m4-ramp-main ${state.transport.rampEnabled!==false?'active':''}">RAMP ${state.transport.rampEnabled!==false?'ON':'OFF'}</button><div class="byd-auto-level-group"><span>CHANNEL AUTO</span>${autoMixLevelButtons('channels',state.autoMix.channelLevel)}</div><div class="byd-auto-level-group"><span>CHARACTER AUTO</span>${autoMixLevelButtons('character',state.autoMix.characterLevel)}</div></section>`;
+
     this.root.innerHTML=`<div class="crt-screen byd-screen byd2-screen" data-dev-page="byd">
       <header data-dev-layer="design" data-dev-key="header" class="d8m4-zone-header" aria-label="Empty header placeholder"></header>
-      <main class="d8m4-zone-main byd2-main">
+      <main class="d8m4-zone-main byd2-main"><div class="screen-soundscape-name" data-current-soundscape>${state.soundscape.name}</div>
         <div class="byd2-channel-row">${channels}</div>
+        ${autoPanel}
         <section data-dev-layer="live" data-dev-key="character" class="byd2-panel byd2-character"><div class="byd2-panel-title">CHARACTER</div>${chars}<div class="byd2-tape"><span>TAPE TYPE</span><button data-action="tape" data-type="normal" data-menu-item class="byd2-button ${state.tapeType==='normal'?'active':''}">NORMAL</button><button data-action="tape" data-type="chrome" data-menu-item class="byd2-button ${state.tapeType==='chrome'?'active':''}">CHROME</button><button data-action="tape" data-type="metal" data-menu-item class="byd2-button ${state.tapeType==='metal'?'active':''}">METAL</button></div></section>
         <div class="byd2-page-nav byd2-page-nav-bottom"><button data-menu-item data-action="secondary-screen" data-screen="control-centre">FX STATION</button><button data-menu-item data-action="close-secondary">CLOSE</button></div>
       </main>
@@ -940,21 +992,23 @@ Choose your destination:  "><div class="spectrum-typed-line"><span class="typed-
     const channelColors=['red','green','blue','yellow'];
     const enabledParams=state.fxMod.params||{intensity:true,reverb:true,width:true,tremolo:true,delay:true,filter:true};
     const channels=state.tracks.map((t,i)=>`<section data-dev-layer="live" data-dev-key="ch${i+1}" class="cc3-channel cc3-${channelColors[i]}">
-      <div class="cc3-channel-title">CH${i+1}</div>
+      <div class="cc3-channel-title">CH${i+1}</div><div class="cc3-channel-name" title="${String(t.name||'').replace(/"/g,'&quot;')}">${t.name||''}</div>
       <div class="cc3-param cc3-filter-only"><div class="cc3-param-head"><span>FILTER</span></div><div class="cc3-slider-wrap"><i class="cc3-mid" aria-hidden="true"></i><input class="cc3-slider" data-kind="track-filter" data-reset="track" data-param="filter" data-index="${i}" type="range" min="-100" max="100" value="${Math.round(t.filter*100)}"></div></div>
     </section>`).join('');
     const fx=['tremolo','delay','reverb','width'].map(name=>`<div class="cc3-effect-card cc3-fx-${name}"><div class="cc3-effect-top"><button data-action="effect" data-name="${name}" data-menu-item aria-pressed="${state.effects[name].enabled?'true':'false'}" class="cc3-label-toggle ${state.effects[name].enabled?'active':''}">${name==='tremolo'?'TREMOLO':name.toUpperCase()}</button></div><div class="cc3-effect-sliderline"><input class="${state.effects[name].enabled?'':'fx-off'}" data-kind="effect-level" data-reset="effect" data-name="${name}" type="range" min="0" max="100" value="${Math.round(state.effects[name].level*100)}"></div></div>`).join('');
 
-    const fxTimeValue=(state.fxMod.timeMode||'01').replace(/^0/,'');
     const fxProbValue=String(state.fxMod.probMode||'x1').toUpperCase();
-    const fxOptions=`<section class="cc3-panel cc3-fx-options-panel"><div class="cc3-fx-options-grid"><div class="cc3-fx-options-col"><div class="cc3-fx-options-title">TIME</div><div class="cc3-fx-options-value" data-fx-option-value="time">${fxTimeValue}</div><button data-action="fxmod-time" data-menu-item class="cc4-side-button cc3-fx-options-set">SET</button></div><div class="cc3-fx-options-col"><div class="cc3-fx-options-title">PROB</div><div class="cc3-fx-options-value" data-fx-option-value="prob">${fxProbValue}</div><button data-action="fxmod-prob" data-menu-item class="cc4-side-button cc3-fx-options-set">SET</button></div><button data-action="fxmod-reset" data-menu-item class="cc4-side-button cc4-reset-button cc3-fx-options-reset">RESET</button></div></section>`;
-    const scope=`<section data-dev-layer="live" data-dev-key="scope" class="cc2-radar-panel ccv2-scope"><div class="cc2-fxmod-head"><span>FX SCOPE</span></div><div class="cc2-radar-zone"><div class="cc2-radar-wrap"><div class="cc2-radar" data-fxmod-pad role="slider" aria-label="FX Mod XY pad"><i class="cc2-radar-ring r1"></i><i class="cc2-radar-ring r2"></i><i class="cc2-radar-v"></i><i class="cc2-radar-h"></i><i class="cc2-radar-sweep"></i><i class="cc2-fxmod-nav" aria-label="FX Scope ship"></i></div></div></div><div class="cc2-fxmod-params"><div><b>X</b><button data-action="fxmod-param" data-param="intensity" data-menu-item class="cc2-param ${enabledParams.intensity!==false?'active':''}">INTENSITY</button><button data-action="fxmod-param" data-param="reverb" data-menu-item class="cc2-param ${enabledParams.reverb!==false?'active':''}">REVERB</button><button data-action="fxmod-param" data-param="width" data-menu-item class="cc2-param ${enabledParams.width!==false?'active':''}">WIDTH</button></div><div><b>Y</b><button data-action="fxmod-param" data-param="tremolo" data-menu-item class="cc2-param ${enabledParams.tremolo!==false?'active':''}">TREM</button><button data-action="fxmod-param" data-param="delay" data-menu-item class="cc2-param ${enabledParams.delay!==false?'active':''}">DELAY</button><button data-action="fxmod-param" data-param="filter" data-menu-item class="cc2-param ${enabledParams.filter!==false?'active':''}">FILTER</button></div></div></section>`;
+    const fxInfluence=String(state.fxMod.influence||'MED').toUpperCase();
+    const fxOptions=`<section class="cc3-panel cc3-fx-options-panel"><div class="cc3-fx-options-grid rc208-spe-options"><div class="rc208-spe-timing"><label>ATTACK<input data-kind="fxmod-attack" type="range" min="250" max="8000" step="250" value="${Math.round(state.fxMod.attackMs||1800)}" ${state.fxMod.infinite?'disabled':''}></label><label>RELEASE<input data-kind="fxmod-release" type="range" min="500" max="12000" step="250" value="${Math.round(state.fxMod.releaseMs||4000)}" ${state.fxMod.infinite?'disabled':''}></label><button data-action="fxmod-infinite" data-menu-item class="cc4-side-button ${state.fxMod.infinite?'active':''}">${state.fxMod.infinite?'INF ON':'INF'}</button></div><div class="cc3-fx-options-col"><div class="cc3-fx-options-title">PROB</div><div class="cc3-fx-options-value" data-fx-option-value="prob">${fxProbValue}</div><button data-action="fxmod-prob" data-menu-item class="cc4-side-button cc3-fx-options-set">SET</button></div><div class="cc3-fx-options-col"><div class="cc3-fx-options-title">INFL</div><div class="cc3-fx-options-value" data-fxmod-influence-value>${fxInfluence}</div><button data-action="fxmod-influence" data-menu-item class="cc4-side-button cc3-fx-options-set">SET</button></div><button data-action="fxmod-reset" data-menu-item class="cc4-side-button cc4-reset-button cc3-fx-options-reset">RESET</button></div></section>`;
+    const autoFxPanel=`<section class="cc-autofx-panel"><button data-action="autofx" data-menu-item class="d8m4-auto-main cc-autofx-main ${state.autoFx?.enabled?'active':''}">AUTO FX ${state.autoFx?.enabled?'ON':'OFF'}</button><div class="cc-autofx-line"><span>NUMBER</span>${['1','2','3','ALL','RND'].map(mode=>`<button data-action="autofx-count" data-mode="${mode}" data-menu-item class="cc-autofx-choice ${String(state.autoFx?.countMode||'1').toUpperCase()===mode?'active':''}">${mode}</button>`).join('')}</div><div class="cc-autofx-line"><span>FREQ</span>${['LOW','MED','HIGH'].map(mode=>`<button data-action="autofx-frequency" data-mode="${mode}" data-menu-item class="cc-autofx-choice ${String(state.autoFx?.frequency||'MED').toUpperCase()===mode?'active':''}">${mode}</button>`).join('')}</div></section>`;
+    const scope=`<section data-dev-layer="live" data-dev-key="scope" class="cc2-radar-panel ccv2-scope"><div class="cc2-fxmod-head"><span>FX SCOPE</span><em class="rc208-fx-owner" data-fx-control-status>AUTO MIX</em></div><div class="cc2-radar-zone"><div class="cc2-radar-wrap"><div class="cc2-radar" data-fxmod-pad role="slider" aria-label="FX Mod XY pad"><i class="cc2-radar-ring r1"></i><i class="cc2-radar-ring r2"></i><i class="cc2-radar-v"></i><i class="cc2-radar-h"></i><i class="cc2-radar-sweep"></i><i class="cc2-fxmod-nav" aria-label="FX Scope ship"></i></div></div></div><div class="cc2-fxmod-params"><div><b>X</b><button data-action="fxmod-param" data-param="intensity" data-menu-item class="cc2-param ${enabledParams.intensity!==false?'active':''}">INTENSITY</button><button data-action="fxmod-param" data-param="reverb" data-menu-item class="cc2-param ${enabledParams.reverb!==false?'active':''}">REVERB</button><button data-action="fxmod-param" data-param="width" data-menu-item class="cc2-param ${enabledParams.width!==false?'active':''}">WIDTH</button></div><div><b>Y</b><button data-action="fxmod-param" data-param="tremolo" data-menu-item class="cc2-param ${enabledParams.tremolo!==false?'active':''}">TREM</button><button data-action="fxmod-param" data-param="delay" data-menu-item class="cc2-param ${enabledParams.delay!==false?'active':''}">DELAY</button><button data-action="fxmod-param" data-param="filter" data-menu-item class="cc2-param ${enabledParams.filter!==false?'active':''}">FILTER</button></div></div></section>`;
 
     this.root.innerHTML=`<div class="crt-screen cc2-screen ccv2-screen cc3-screen" data-dev-page="cc">
       <header data-dev-layer="design" data-dev-key="header" class="d8m4-zone-header" aria-label="Empty header placeholder"></header>
-      <main class="d8m4-zone-main cc3-main">
+      <main class="d8m4-zone-main cc3-main"><div class="screen-soundscape-name" data-current-soundscape>${state.soundscape.name}</div>
         <section data-dev-layer="live" data-dev-key="effects" class="cc3-panel cc3-effects"><div class="cc3-panel-title">EFFECTS</div><div class="cc3-effects-grid">${fx}</div><div class="cc3-intensity"><span>INTENSITY</span><div class="cc3-intensity-sliderline"><input data-kind="intensity" type="range" min="-50" max="50" value="${Math.round(state.intensity*50)}"></div></div></section>
         ${scope}
+        ${autoFxPanel}
         ${fxOptions}
         <div class="cc3-channel-group-frame" aria-hidden="true"></div><div class="cc3-channel-row">${channels}</div>
         <div class="cc3-page-nav cc3-page-nav-bottom"><button data-menu-item data-action="secondary-screen" data-screen="byd">BUILD YOUR DRONE</button><button data-menu-item data-action="close-secondary">CLOSE</button></div>

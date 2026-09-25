@@ -1,0 +1,8 @@
+D8M4 RC209
+- Split AUTO MIX (BYD continuous channel/character movement) from AUTO FX (FX Station effects dropouts).
+- BYD: large AUTO MIX and RAMP toggles; CHANNEL AUTO and CHARACTER AUTO LOW/MED/HIGH intensity selectors.
+- FX Station: large AUTO FX toggle; 1/2/3/ALL/RND count; LOW/MED/HIGH frequency.
+- AUTO FX affects Tremolo/Delay/Reverb/Width only, slowly drops selected effects to zero and returns to exact baseline.
+- AUTO FX temporarily excludes its selected effects from FX Scope Special Event control; releases them after baseline return.
+- Previous-effect weighting reduces immediate repeats; RND count favours 1/2 over 3/ALL.
+- SAFE/SMOOTH performance profiles retained. DEV windows remain disabled.

@@ -5902,3 +5902,83 @@ body.welcome-live-edit .welcome-path-stack .welcome-path-button{
 }
 .performance-mode-button:active{transform:translateY(1px);}
 .performance-mode-button[data-mode="smooth"]{background:#f4eedf;}
+
+
+/* RC208 — Special Event controls, status and cheaper TV OSD */
+.rc208-fx-owner{margin-left:auto;font-style:normal;font:700 10px ZX,'Courier New',monospace;letter-spacing:.06em;color:#fff;border:1px solid currentColor;padding:3px 6px;min-width:104px;text-align:center}
+.rc208-fx-owner[data-owner="automix"]{color:#6cff8b}.rc208-fx-owner[data-owner="spe"]{color:#ffdc52}.rc208-fx-owner[data-owner="manual"]{color:#fff}
+.rc208-spe-options{grid-template-columns:minmax(0,2fr) minmax(74px,.75fr) minmax(74px,.75fr) auto!important;align-items:stretch!important}
+.rc208-spe-timing{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}.rc208-spe-timing label{display:grid;gap:4px;font:700 10px ZX,'Courier New',monospace;color:#fff;text-align:center}.rc208-spe-timing input{width:100%;min-width:100px}.rc208-spe-timing input:disabled{opacity:.28}
+.cc2-fxmod-head{display:flex!important;align-items:center;gap:8px}
+.osd{will-change:opacity}.osd-meter,.osd-label,.osd-value{contain:paint}
+
+/* RC209 — split AUTO MIX / AUTO FX control surfaces. */
+#crt-screen-root .byd2-screen .byd-auto-panel{
+  position:absolute!important;left:1%!important;top:51.2%!important;width:98%!important;height:10.2%!important;
+  z-index:30!important;display:grid!important;grid-template-columns:1.1fr .9fr 2fr 2fr!important;gap:10px!important;
+  align-items:center!important;padding:6px 8px!important;box-sizing:border-box!important;border:2px solid rgba(235,235,235,.9)!important;
+  border-radius:6px!important;background:#020405!important;
+}
+#crt-screen-root .byd2-screen .d8m4-zone-main [data-dev-key="character"]{top:63%!important;height:24%!important;}
+#crt-screen-root .d8m4-auto-main{
+  min-height:38px!important;border:2px solid #f3f3f3!important;border-radius:5px!important;background:#050505!important;color:#fff!important;
+  font:900 13px/1 ZX,'Courier New',monospace!important;letter-spacing:.04em!important;box-shadow:none!important;
+}
+#crt-screen-root .d8m4-auto-main.active{background:#20ef5a!important;color:#001408!important;border-color:#20ef5a!important;}
+#crt-screen-root .byd-auto-level-group{display:grid!important;grid-template-columns:1.7fr repeat(3,1fr)!important;gap:5px!important;align-items:center!important;}
+#crt-screen-root .byd-auto-level-group>span{color:#fff!important;font:700 9px/1.1 ZX,'Courier New',monospace!important;text-align:center!important;}
+#crt-screen-root .byd-auto-level{height:28px!important;border:1px solid #fff!important;background:#000!important;color:#fff!important;font:700 9px ZX,'Courier New',monospace!important;}
+#crt-screen-root .byd-auto-level.active{background:#fff!important;color:#000!important;}
+
+#crt-screen-root .cc3-screen .cc-autofx-panel{
+  position:absolute!important;left:74.5%!important;top:20.2%!important;width:24.5%!important;height:43.8%!important;z-index:30!important;
+  box-sizing:border-box!important;padding:9px!important;border:2px solid rgba(235,235,235,.92)!important;border-radius:6px!important;background:#010405!important;
+  display:grid!important;grid-template-rows:auto 1fr 1fr!important;gap:9px!important;color:#20ef5a!important;
+}
+#crt-screen-root .cc3-screen .cc-autofx-main{width:100%!important;min-height:42px!important;font-size:14px!important;}
+#crt-screen-root .cc3-screen .cc-autofx-line{display:grid!important;grid-template-columns:58px repeat(5,minmax(0,1fr))!important;gap:4px!important;align-items:center!important;}
+#crt-screen-root .cc3-screen .cc-autofx-line:last-child{grid-template-columns:58px repeat(3,minmax(0,1fr))!important;}
+#crt-screen-root .cc3-screen .cc-autofx-line>span{font:700 9px ZX,'Courier New',monospace!important;color:#20ef5a!important;text-align:left!important;}
+#crt-screen-root .cc3-screen .cc-autofx-choice{height:27px!important;padding:0 2px!important;border:1px solid #20ef5a!important;background:#000!important;color:#20ef5a!important;font:700 8px ZX,'Courier New',monospace!important;}
+#crt-screen-root .cc3-screen .cc-autofx-choice.active{background:#20ef5a!important;color:#001408!important;}
+.rc208-fx-owner[data-owner="autofx"]{color:#ff79ff!important;}
+
+
+/* RC210 — current soundscape + JSON channel-name labels. */
+.screen-soundscape-name {
+  position: absolute;
+  top: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 70%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  z-index: 8;
+  font-family: "ZX Spectrum", monospace;
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #fff;
+  text-align: center;
+  pointer-events: none;
+}
+.byd2-channel-name,
+.cc3-channel-name {
+  display: block;
+  width: 100%;
+  min-height: 14px;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: "ZX Spectrum", monospace;
+  font-size: 9px;
+  line-height: 12px;
+  letter-spacing: .35px;
+  color: #fff;
+  text-align: center;
+  opacity: .95;
+  pointer-events: none;
+}

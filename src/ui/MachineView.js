@@ -8,7 +8,10 @@ export class MachineView {
     this.futureMessageTimer = null;
     this.ssFlashTimer = null;
     this.lastSoundscapeId = null;
-    this.sleepTimer = { optionLabel: 'OFF', durationMs: 0, remainingMs: 0, running: false, paused: false, interval: null, lastTickAt: 0, menuOpen: false };
+    this.sleepTimer = { optionLabel: 'OFF', durationMs: 0, remainingMs: 0, running: false, paused: false, interval: null, lastTickAt: 0, menuOpen: false, expiring: false };
+    this.wakeLock = null;
+    this.lastTimerDisplayText = null;
+    this.lastTimerOptionLabel = null;
     this.#buildSmallLevels();
     this.crt = new CRTSystem({ store, controller, root: document.querySelector('#crt-screen-root') });
     this.#bind();
@@ -30,7 +33,7 @@ export class MachineView {
     this.pendingRenderMeta = meta;
     const reason=String(meta?.reason||'');
     const automationVisual=/^(automix-|special-event-|fxmod-frame)/.test(reason);
-    const liveControl=/^(track-(volume|pan|filter)|effect-|character-|intensity)/.test(reason);
+    const liveControl=/^(track-(volume|pan|filter)|effect-|character-|intensity|master-(tone|brightness)|game-volume|main-volume)/.test(reason);
     const perf=getPerformanceProfile();
     const minGap=automationVisual?perf.automationVisualMs:(liveControl?perf.liveControlMs:0);
     const elapsed=performance.now()-this.lastVisualRenderAt;
@@ -66,6 +69,9 @@ export class MachineView {
   }
 
   #bind() {
+    const requestWake=()=>this.#requestWakeLock();
+    window.addEventListener('pointerdown', requestWake, {once:true, capture:true});
+    document.addEventListener('visibilitychange',()=>{ if(!document.hidden)this.#requestWakeLock(); });
     document.querySelectorAll('[data-soundscape]').forEach(btn => btn.addEventListener('click', () => this.controller.selectSoundscape(btn.dataset.soundscape)));
     document.querySelector('#play-button').addEventListener('click', () => { this.controller.play(); this.crt.startGame(); });
     document.querySelector('#pause-button').addEventListener('click', () => {
@@ -162,6 +168,14 @@ export class MachineView {
     }, true);
   }
 
+  async #requestWakeLock() {
+    if (document.hidden || this.wakeLock || !('wakeLock' in navigator)) return;
+    try {
+      this.wakeLock = await navigator.wakeLock.request('screen');
+      this.wakeLock.addEventListener('release',()=>{ this.wakeLock=null; });
+    } catch {}
+  }
+
   #togglePlayPause() {
     if (this.store.getState().transport.status === 'playing') this.controller.pause();
     else this.controller.play();
@@ -211,7 +225,7 @@ export class MachineView {
       btn.classList.toggle('rocker-up', direction>0);
       btn.classList.toggle('rocker-down', direction<0);
       apply(e);
-      delayTimer=setTimeout(()=>{ repeatTimer=setInterval(()=>this.#stepRocker(btn.dataset.rocker,direction),90); },350);
+      delayTimer=setTimeout(()=>{ repeatTimer=setInterval(()=>this.#stepRocker(btn.dataset.rocker,direction),140); },400);
     });
     btn.addEventListener('pointerup', release); btn.addEventListener('pointercancel', release); btn.addEventListener('lostpointercapture', release);
   }
@@ -223,7 +237,7 @@ export class MachineView {
       this.controller.setBrightness(next); this.#showOsd('BRIGHTNESS', Math.round(next*100));
     } else if (kind==='tone') {
       const next=Math.max(-1,Math.min(1,s.master.tone + direction*.08));
-      this.controller.setMasterTone(next); this.#showOsd('TONE', Math.round(next*100), true);
+      this.controller.setMasterTone(next); this.#showToneOsd(Math.round(next*100));
     } else if (kind==='gameVolume') {
       const next=Math.max(0,Math.min(1,s.auxiliary.gameVolume + direction*.05));
       this.controller.setGameVolume(next); this.#showOsd('GAME VOL', Math.round(next*100));
@@ -233,18 +247,32 @@ export class MachineView {
     }
   }
 
-  #showOsd(label, value, bipolar=false) {
+  #getOsdParts(){
     const osd=document.querySelector('#osd');
-    const numeric = Number(value);
-    const isNumeric = Number.isFinite(numeric);
-    const count = isNumeric ? (bipolar ? Math.round(Math.abs(numeric)/5) : Math.round(numeric/5)) : 0;
-    const bars = isNumeric ? '|'.repeat(Math.max(0,Math.min(20,count))) : '';
-    const display = isNumeric ? (bipolar ? `${numeric>0?'+':''}${numeric}` : `${numeric}`) : String(value);
-    osd.innerHTML=`<span class="osd-label"></span><span class="osd-meter"></span><span class="osd-value"></span>`;
-    osd.querySelector('.osd-label').textContent=label;
-    osd.querySelector('.osd-meter').textContent=bars;
-    osd.querySelector('.osd-value').textContent=display;
-    osd.classList.add('show'); clearTimeout(this.osdTimer); this.osdTimer=setTimeout(()=>osd.classList.remove('show'),1800);
+    if(!osd)return null;
+    if(!osd.querySelector('.osd-label')){
+      osd.innerHTML='<span class="osd-label"></span><span class="osd-meter"></span><span class="osd-value"></span>';
+    }
+    return {osd,label:osd.querySelector('.osd-label'),meter:osd.querySelector('.osd-meter'),value:osd.querySelector('.osd-value')};
+  }
+
+  #showOsd(label, value, bipolar=false) {
+    const parts=this.#getOsdParts(); if(!parts)return;
+    const numeric=Number(value), isNumeric=Number.isFinite(numeric);
+    const count=isNumeric?(bipolar?Math.round(Math.abs(numeric)/5):Math.round(numeric/5)):0;
+    const bars=isNumeric?'|'.repeat(Math.max(0,Math.min(20,count))):'';
+    const display=isNumeric?(bipolar?`${numeric>0?'+':''}${numeric}`:`${numeric}`):String(value);
+    parts.label.textContent=label; parts.meter.textContent=bars; parts.value.textContent=display;
+    parts.osd.classList.add('show'); clearTimeout(this.osdTimer); this.osdTimer=setTimeout(()=>parts.osd.classList.remove('show'),1800);
+  }
+
+  #showToneOsd(value){
+    const parts=this.#getOsdParts(); if(!parts)return;
+    const numeric=Math.max(-100,Math.min(100,Number(value)||0));
+    const width=21, centre=10, pos=Math.max(0,Math.min(width-1,Math.round(((numeric+100)/200)*(width-1))));
+    const chars=Array(width).fill('-'); chars[centre]='+'; chars[pos]='I';
+    parts.label.textContent='BASS'; parts.meter.textContent=chars.join(''); parts.value.textContent=`TREB ${numeric>0?'+':''}${numeric}`;
+    parts.osd.classList.add('show'); clearTimeout(this.osdTimer); this.osdTimer=setTimeout(()=>parts.osd.classList.remove('show'),1800);
   }
 
 
@@ -315,6 +343,7 @@ export class MachineView {
     this.sleepTimer.durationMs = safeSeconds * 1000;
     this.sleepTimer.remainingMs = safeSeconds * 1000;
     this.sleepTimer.paused = false;
+    this.sleepTimer.expiring = false;
     if (safeSeconds > 0) this.#startTimerInterval();
     else this.#stopTimerInterval();
     this.#toggleTimerMenu(false);
@@ -343,6 +372,7 @@ export class MachineView {
     }
     this.sleepTimer.remainingMs = this.sleepTimer.durationMs;
     this.sleepTimer.paused = false;
+    this.sleepTimer.expiring = false;
     this.#startTimerInterval();
     this.#renderSleepTimer();
   }
@@ -373,9 +403,15 @@ export class MachineView {
       this.sleepTimer.paused = false;
       this.#stopTimerInterval();
       this.#renderSleepTimer();
-      this.#showOsd('TIMER', 'END');
-      this.controller.stop();
-      this.crt.stopGame();
+      if (!this.sleepTimer.expiring) {
+        this.sleepTimer.expiring = true;
+        this.#showOsd('TIMER', 'FADING');
+        Promise.resolve(this.controller.timerFadeOutAndStop(10)).finally(()=>{
+          this.sleepTimer.expiring = false;
+          this.crt.stopGame();
+          this.#showOsd('TIMER', 'END');
+        });
+      }
       return;
     }
     this.#renderSleepTimer();
@@ -419,8 +455,11 @@ export class MachineView {
   #renderSleepTimer() {
     if (!this.timerDisplay) return;
     const displayText = this.#formatSleepTimer(this.sleepTimer.remainingMs);
-    this.timerDisplay.innerHTML = this.#renderSegmentedTime(displayText);
-    this.timerDisplay.setAttribute('aria-label', displayText);
+    if (displayText !== this.lastTimerDisplayText) {
+      this.timerDisplay.innerHTML = this.#renderSegmentedTime(displayText);
+      this.timerDisplay.setAttribute('aria-label', displayText);
+      this.lastTimerDisplayText = displayText;
+    }
     this.timerDisplay.classList.toggle('is-off', this.sleepTimer.durationMs <= 0);
     this.timerDisplay.classList.toggle('is-running', this.sleepTimer.running);
 
@@ -437,15 +476,23 @@ export class MachineView {
       this.timerResetButton.setAttribute('aria-pressed', 'false');
     }
 
-    if (this.timerOptionMenu) {
+    if (this.timerOptionMenu && this.lastTimerOptionLabel !== this.sleepTimer.optionLabel) {
       this.timerOptionMenu.querySelectorAll('[data-timer-option]').forEach((button) => {
         button.classList.toggle('is-selected', button.textContent.trim().toUpperCase() === String(this.sleepTimer.optionLabel).toUpperCase());
       });
+      this.lastTimerOptionLabel = this.sleepTimer.optionLabel;
     }
   }
 
   render(state, meta) {
+    const reason=String(meta?.reason||'');
     document.querySelector('#machine').style.setProperty('--unit-brightness', String(state.master.brightness));
+    // Physical TV/main rockers do not require a CRT-page repaint. Avoiding that
+    // broad render path is particularly important on tablets while an OSD is up.
+    if (/^(master-(tone|brightness)|game-volume|main-volume)$/.test(reason)) {
+      if (reason === 'game-volume' || reason === 'main-volume') this.crt.gameRuntime?.syncAudioLevels?.();
+      return;
+    }
     if (this.lastSoundscapeId !== state.soundscape.id) {
       if (this.lastSoundscapeId !== null) this.#showSSFlash(state.soundscape.id);
       this.lastSoundscapeId = state.soundscape.id;

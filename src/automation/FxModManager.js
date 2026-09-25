@@ -10,6 +10,7 @@ export class FxModManager {
     this.scopeTimer=null; this.scopeEpochMs=0; this.scopePassCount=0;
     this.randomProbTarget=null;
     this.gameControlled=false;
+    this.manualOverrideIds=new Set();
   }
 
   paramOn(name){return this.store.getState().fxMod?.params?.[name]!==false;}
@@ -55,6 +56,35 @@ export class FxModManager {
     // newly selected 01-second mode. Give it a long, smooth drift home.
     this.#recoverFromCurrent(fromInfinity ? 10000 : null);
   }
+
+  onTimingChanged(){
+    if(this.active && !this.manual && !this.#isInfinity()) this.#recoverFromCurrent();
+  }
+  onInfinityChanged(enabled){
+    if(enabled){
+      this.scheduleAuto(false);
+      if(this.store.getState().transport.status==='playing' && !this.active && !this.manual && this.#hasPattern()) this.triggerRandom('auto');
+    } else if(this.active && !this.manual){
+      this.#recoverFromCurrent();
+    }
+  }
+  beginParamOverride(id){
+    if(!id)return; this.manualOverrideIds.add(id);
+    this.onStatus({manualOverrideCount:this.manualOverrideIds.size});
+  }
+  endParamOverride(id){
+    if(!id)return; this.manualOverrideIds.delete(id);
+    this.onStatus({manualOverrideCount:this.manualOverrideIds.size});
+  }
+  manualOverrideValue(id,value){
+    if(!this.active || !this.baseline || !id)return;
+    const v=Number(value);
+    const effect=/^effect:(reverb|width|tremolo|delay)$/.exec(id);
+    if(effect)this.baseline[effect[1]]=clamp01(v);
+    else if(id==='global:intensity')this.baseline.intensity=clampBi(v);
+    else { const m=/^track:(\d+):filter$/.exec(id); if(m&&this.baseline.filters[Number(m[1])]!==undefined)this.baseline.filters[Number(m[1])]=clampBi(v); }
+  }
+
   onProbabilityChanged(){ this.scopePassCount=0; this.randomProbTarget=null; this.onStatus({scopePassCount:0}); }
 
   #drawWeightedRandomProbTarget(){
@@ -83,9 +113,11 @@ export class FxModManager {
     const frs=this.store.getState().frs;
     return frs==='sleep'?12800:frs==='relax'?6400:3200;
   }
-  #timeMode(){ return this.store.getState().fxMod?.timeMode || '01'; }
-  #isInfinity(){ return this.#timeMode()==='INF'; }
-  #recoverMs(){ const mode=this.#timeMode(); return mode==='10'?10000:mode==='05'?5000:mode==='02'?2000:1000; }
+  #timeMode(){ return this.store.getState().fxMod?.timeMode || 'CUSTOM'; }
+  #isInfinity(){ const fx=this.store.getState().fxMod||{}; return Boolean(fx.infinite || fx.timeMode==='INF'); }
+  #attackMs(){ return Math.max(250,Math.min(8000,Number(this.store.getState().fxMod?.attackMs)||1800)); }
+  #recoverMs(){ return Math.max(500,Math.min(12000,Number(this.store.getState().fxMod?.releaseMs)||4000)); }
+  #influenceScale(){ const m=String(this.store.getState().fxMod?.influence||'MED').toUpperCase(); return m==='LOW'?.45:m==='HIGH'?1:.72; }
   #fx(){ return this.store.getState().fxMod || {}; }
   #memory(){ const fx=this.#fx(); return {x:clampBi(fx.memoryX||0), y:clampBi(fx.memoryY||0)}; }
   #releaseVelocity(){ const rv=this.#fx().releaseVelocity||{}; return {x:Number(rv.x)||0,y:Number(rv.y)||0}; }
@@ -321,11 +353,13 @@ export class FxModManager {
     const entry=clean[firstMeaningful]||clean[clean.length-1];
     const entryX=clampBi(entry.x*scale), entryY=clampBi(entry.y*scale);
     const entryDistance=Math.hypot(entryX,entryY);
-    const leadInMs=Math.max(180,Math.min(520,180+entryDistance*340));
+    const totalAttack=this.#attackMs();
+    const leadInMs=Math.max(140,Math.min(totalAttack*.35,160+entryDistance*220));
 
     const gestureStartT=entry.t;
     const gestureEndT=clean[clean.length-1].t;
-    const gestureDuration=Math.max(1,gestureEndT-gestureStartT);
+    const recordedDuration=Math.max(1,gestureEndT-gestureStartT);
+    const gestureDuration=Math.max(120,totalAttack-leadInMs);
     const start=performance.now();
 
     const finishGesture=()=>{
@@ -358,7 +392,8 @@ export class FxModManager {
       const gestureElapsed=elapsed-leadInMs;
       if(gestureElapsed>=gestureDuration){ finishGesture(); return; }
 
-      const sample=this.#sampleAt(clean,gestureStartT+gestureElapsed);
+      const recordedElapsed=(gestureElapsed/gestureDuration)*recordedDuration;
+      const sample=this.#sampleAt(clean,gestureStartT+recordedElapsed);
       this.#applyXY(clampBi(sample.x*scale),clampBi(sample.y*scale),'SPIKE');
       this.timer=setTimeout(step,16);
     };
@@ -371,17 +406,18 @@ export class FxModManager {
     this.timer=null; this.active=true; this.onStatus({active:true,source,stage:'SPIKE'});
   }
   #applyXY(x,y,stage='ACTIVE'){
-    if(!this.baseline)return; const b=this.baseline;
-    if(this.paramOn('reverb'))this.apply('effect:reverb',clamp01(b.reverb+x*.42));
-    if(this.paramOn('width'))this.apply('effect:width',clamp01(b.width+x*.42));
-    if(this.paramOn('tremolo'))this.apply('effect:tremolo',clamp01(b.tremolo+y*.42));
-    if(this.paramOn('delay'))this.apply('effect:delay',clamp01(b.delay+y*.42));
-    if(this.paramOn('intensity'))this.apply('global:intensity',clampBi(b.intensity+x*.50));
-    if(this.paramOn('filter'))b.filters.forEach((v,i)=>this.apply(`track:${i}:filter`,clampBi(v+y*.62)));
+    if(!this.baseline)return; const b=this.baseline, k=this.#influenceScale();
+    const free=(id)=>!this.manualOverrideIds.has(id);
+    if(this.paramOn('reverb')&&free('effect:reverb'))this.apply('effect:reverb',clamp01(b.reverb+x*.42*k));
+    if(this.paramOn('width')&&free('effect:width'))this.apply('effect:width',clamp01(b.width+x*.42*k));
+    if(this.paramOn('tremolo')&&free('effect:tremolo'))this.apply('effect:tremolo',clamp01(b.tremolo+y*.42*k));
+    if(this.paramOn('delay')&&free('effect:delay'))this.apply('effect:delay',clamp01(b.delay+y*.42*k));
+    if(this.paramOn('intensity')&&free('global:intensity'))this.apply('global:intensity',clampBi(b.intensity+x*.50*k));
+    if(this.paramOn('filter'))b.filters.forEach((v,i)=>{const id=`track:${i}:filter`;if(free(id))this.apply(id,clampBi(v+y*.62*k));});
     this.onStatus({active:true,x,y,stage});
   }
   #animateTo(x,y,source){
-    const g=this.generation, start=performance.now(), attack=260;
+    const g=this.generation, start=performance.now(), attack=this.#attackMs();
     const step=()=>{
       if(g!==this.generation||this.manual)return;
       const p=Math.min(1,(performance.now()-start)/attack), e=1-Math.pow(1-p,3);
@@ -423,10 +459,11 @@ export class FxModManager {
   }
   #finish(){
     if(this.timer)clearTimeout(this.timer); this.timer=null; this.active=false; this.manual=false;
+    this.manualOverrideIds.clear();
     this.syncOwnership();
     this.scopePassCount=0;
     this.randomProbTarget=null;
-    this.onStatus({active:false,x:0,y:0,stage:'IDLE',scopePassCount:0});
+    this.onStatus({active:false,x:0,y:0,stage:'IDLE',scopePassCount:0,manualOverrideCount:0});
     this.baseline=null;
     if(!this.gameControlled && this.store.getState().fxMod.enabled && this.store.getState().transport.status==='playing') this.scheduleAuto(false);
   }

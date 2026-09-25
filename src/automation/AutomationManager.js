@@ -36,6 +36,8 @@ export class AutomationManager {
     return defs;
   }
 
+  get autoDefinitions() { return this.definitions.filter((def) => def.type === "volume" || def.type === "pan" || def.type === "character"); }
+
   resetBaselines() {
     this.baselines.clear();
     const state = this.store.getState();
@@ -93,7 +95,7 @@ export class AutomationManager {
     if (this.active) return;
     this.active = true;
     this.onStatus({ active: true });
-    for (const def of this.definitions) this.#schedule(def.id, true);
+    for (const def of this.autoDefinitions) this.#schedule(def.id, true);
   }
 
   pause() {
@@ -121,7 +123,7 @@ export class AutomationManager {
   }
 
   forceRandomEvent() {
-    const eligible = this.definitions.filter((def) => this.#eligible(def, this.store.getState()));
+    const eligible = this.autoDefinitions.filter((def) => this.#eligible(def, this.store.getState()));
     if (!eligible.length) return false;
     // Shuffle so the development button reliably starts one visible move even
     // when the first random target happens to fall below the no-op threshold.
@@ -202,7 +204,7 @@ export class AutomationManager {
     if (replace && this.scheduleTimers.has(id)) clearTimeout(this.scheduleTimers.get(id));
     if (!replace && this.scheduleTimers.has(id)) return;
     const def = this.definitions.find((item) => item.id === id);
-    if (!def) return;
+    if (!def || !this.autoDefinitions.some((item) => item.id === id)) return;
     const delay = this.#eventIntervalMs();
     const timer = setTimeout(() => {
       this.scheduleTimers.delete(id);
@@ -239,10 +241,13 @@ export class AutomationManager {
 
   #target(def, current) {
     const baseline = this.baselines.has(def.id) ? this.baselines.get(def.id) : current;
+    const state = this.store.getState();
+    const mode = def.type === "character" ? state.autoMix?.characterLevel : state.autoMix?.channelLevel;
+    const amount = String(mode || "MED").toUpperCase() === "LOW" ? 0.55 : String(mode || "MED").toUpperCase() === "HIGH" ? 1.45 : 1;
     if (def.type === "effect") {
-      const min = Math.max(0, baseline - 0.20);
-      const max = Math.min(1, baseline + 0.20);
-      let target = current + random(-0.05, 0.05);
+      const min = Math.max(0, baseline - 0.30);
+      const max = Math.min(1, baseline + 0.30);
+      let target = current + random(-0.08, 0.08);
       if (target < min) target = min + (min - target);
       if (target > max) target = max - (target - max);
       return clamp(target, min, max);
@@ -253,43 +258,44 @@ export class AutomationManager {
       let target;
       if (distanceBelow > 0.06) {
         const recoveryChance = Math.min(0.90, 0.65 + distanceBelow * 1.5);
-        target = Math.random() < recoveryChance ? current + random(0.025, 0.065) : current - random(0.015, 0.035);
+        target = Math.random() < recoveryChance ? current + random(0.035, 0.085) : current - random(0.020, 0.050);
       } else {
-        target = Math.random() < 0.58 ? current + random(0.015, 0.050) : current - random(0.015, 0.050);
+        target = Math.random() < 0.58 ? current + random(0.025, 0.070) : current - random(0.025, 0.070);
       }
-      return clamp(target, 0, Math.max(0, baseline));
+      return clamp(current + (target-current)*amount, 0, Math.max(0, baseline));
     }
 
     if (def.type === "pan") {
       let normalized = (clampBi(current) + 1) / 2;
-      normalized += random(-0.10, 0.10);
+      normalized += random(-0.20, 0.20);
       if (Math.random() < 0.08) normalized = random(0.15, 0.85);
-      return clampBi(clamp01(normalized) * 2 - 1);
+      const rawTarget = clampBi(clamp01(normalized) * 2 - 1);
+      return clampBi(current + (rawTarget-current)*amount);
     }
 
     if (def.type === "filter") {
       // The final D8M4 filter is bipolar (LP ← neutral → HP), unlike the old
       // one-sided strength control. Preserve the old gentle movement character
       // while allowing travel on either side of neutral.
-      const min = Math.max(-1, clampBi(baseline) - 0.45);
-      const max = Math.min(1, clampBi(baseline) + 0.45);
-      let target = current + random(-0.14, 0.14);
+      const min = Math.max(-1, clampBi(baseline) - 0.60);
+      const max = Math.min(1, clampBi(baseline) + 0.60);
+      let target = current + random(-0.20, 0.20);
       if (Math.random() < 0.08) target = random(Math.max(min, -0.65), Math.min(max, 0.65));
       return clamp(target, min, max);
     }
 
     // Character: deliberately subtler than track/filter motion.
-    const min = Math.max(0, baseline - 0.20);
-    const max = Math.min(1, baseline + 0.20);
-    const step = Math.random() < 0.08 ? random(-0.10, 0.10) : random(-0.045, 0.045);
-    return clamp(current + step, min, max);
+    const min = Math.max(0, baseline - 0.30);
+    const max = Math.min(1, baseline + 0.30);
+    const step = Math.random() < 0.08 ? random(-0.20, 0.20) : random(-0.065, 0.065);
+    return clamp(current + step*amount, min, max);
   }
 
   #gameRange(def, baseline) {
     if (def.type === "volume") return [Math.max(0, baseline - 0.18), Math.min(1, baseline + 0.18)];
     if (def.type === "pan") return [Math.max(-1, baseline - 0.40), Math.min(1, baseline + 0.40)];
     if (def.type === "filter") return [Math.max(-1, baseline - 0.45), Math.min(1, baseline + 0.45)];
-    if (def.type === "effect") return [Math.max(0, baseline - 0.20), Math.min(1, baseline + 0.20)];
+    if (def.type === "effect") return [Math.max(0, baseline - 0.30), Math.min(1, baseline + 0.30)];
     return [0, 1];
   }
 
