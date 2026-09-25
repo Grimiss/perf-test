@@ -1,7 +1,7 @@
 import { OperationGate } from "./OperationGate.js?v=rc215";
 import { AutomationManager } from "../automation/AutomationManager.js?v=rc219";
 import { SpecialEventManager } from "../automation/SpecialEventManager.js?v=rc215";
-import { FxModManager } from "../automation/FxModManager.js?v=rc215";
+import { FxModManager } from "../automation/FxModManager.js?v=rc220";
 import { AutoFxManager } from "../automation/AutoFxManager.js?v=rc219";
 import { getPerformanceProfile } from '../perf/PerformanceProfile.js?v=rc215';
 

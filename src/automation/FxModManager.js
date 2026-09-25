@@ -372,7 +372,16 @@ export class FxModManager {
       if(this.#isInfinity()){
         this.onStatus({active:true,x:ex,y:ey,stage:'HOLD'});
       } else {
-        this.#recoverFrom(ex,ey);
+        // RC220: reproduce the original release/throw during LANDING.
+        // Manual recording already stores the release velocity; previously
+        // playback ignored it and returned from the gesture endpoint in a
+        // straight smooth curve. Reusing the stored release velocity sends
+        // the ship onto the same inertial arc before the spring settles at
+        // 0,0, matching what happens when the gesture is performed live.
+        const landingVx=(Number(rv.x)||0)*scale;
+        const landingVy=(Number(rv.y)||0)*scale;
+        if(Math.hypot(landingVx,landingVy)>.22) this.#coast(landingVx,landingVy);
+        else this.#recoverFrom(ex,ey);
       }
     };
 

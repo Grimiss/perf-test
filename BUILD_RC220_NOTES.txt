@@ -1,0 +1,9 @@
+D8M4 RC220 — FX SCOPE RELEASE TRAJECTORY REPLAY
+
+- Special Event playback now reuses the release/throw velocity captured when the FX Scope gesture was recorded.
+- TAKE OFF remains 0,0 -> recorded gesture start.
+- FLIGHT TIME remains recorded gesture start -> recorded gesture end.
+- LANDING now reproduces the original thrown/inertial arc from the gesture end point before settling smoothly back to 0,0.
+- If the recorded gesture was released without a meaningful throw, LANDING keeps the existing smooth return.
+- INF behaviour is unchanged: it holds at the gesture end point until released.
+- No AUTO MIX, AUTO FX, audio, TV, layout, or performance-mode changes in this release.
